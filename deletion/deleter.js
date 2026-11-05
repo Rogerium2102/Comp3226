@@ -117,14 +117,14 @@ async function purgeCookie(cookie) {
  * @returns {Promise<chrome.cookies.Cookie | null>}
  */
 async function wipeCookie(cookie) {
-    let cookieDetails = cookie;
+    let cookieDetails = {...cookie}; //Creates shallow copy of cookie for editing
     getURL(cookieDetails);
     cookieDetails.value = "0"; //Wipes tracking value with truthy value
 
-    //Removes domain if host-only
+    //Cookie retrieval adds domain to host-only cookies, if domain set then it will be treated as a new cookie
     if (cookieDetails.domain && cookieDetails.hostOnly) cookieDetails.domain = undefined;
     //Unspecified value will error when setting a cookie
-    if (cookie.sameSite == "unspecified") cookie.sameSite = undefined
+    if (cookieDetails.sameSite == "unspecified") cookieDetails.sameSite = undefined;
 
     try {
         const result = await chrome.cookies.set(cookieDetails); //Returns dict of created cookie
@@ -133,12 +133,12 @@ async function wipeCookie(cookie) {
             console.log(`Successfully neutralized cookie: ${result.name}`);
             store(cookie); //Stores wiped cookie in recycling bin
         } else {
-            console.warn(`Failed to wipe cookie ${cookie.name}`);
+            console.warn(`Failed to wipe cookie ${cookieDetails.name}`);
         }
 
         return result;
     } catch (err) {
-        console.error(`Failed to wipe cookie ${cookie.name}:`, err);
+        console.error(`Failed to wipe cookie ${cookieDetails.name}:`, err);
         return null;
     }
 }

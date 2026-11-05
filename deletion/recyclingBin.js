@@ -1,5 +1,7 @@
 //NEED TO CREATE SYSTEM FOR ID TRACING OF COOKIES
 
+//Exported functions
+
 /**
  * Stores a cookie that has been deleted
  * @param {chrome.cookies.Cookie} cookie
@@ -45,4 +47,81 @@ export async function get(id, del) {
     }
 }
 
+/**
+ * Outputs IDs of all deleted cookies
+ * MIGHT LEAK TOO MUCH DATA DUE TO ABILITY TO SCAN ENTIRE BIN WITH THIS
+ * @returns {Promise<String[]>} - Array of cookie IDs
+ */
+export async function getIDs() {
+    return bin.map(cookie => cookie.id);
+}
+
+/**
+ * Outputs all deleted cookies
+ * MIGHT LEAK TOO MUCH DATA DUE TO ABILITY TO SCAN ENTIRE BIN WITH THIS
+ * @returns {Promise<chrome.cookies.Cookie[]>} - Array of deleted cookie objects
+ */
+export async function getAll() {
+    return bin;
+}
+
+/**
+ * Checks whether an input cookie has already been deleted
+ * @param {chrome.cookies.Cookie} cookie - Cookie object to be checked
+ * @returns {Promise<Bool>} - If cookie matches an existing cookie in the bin
+ */
+export async function checkBin(cookie) {
+    if (!cookie) {
+        console.error("No cookie provided for bin check");
+        return false;
+    }
+    try {
+        return bin.some(c => checkCookieMatch(c, cookie));
+    } catch (error) {
+        console.error(`Error checking cookie ${cookie.name} in bin: ${error}`);
+        return false;
+    }
+}
+
+//Local functions
+
 let bin = [] //List[Cookie] //Recycling bin for deleted cookies
+
+/**
+ * Checks if a cookie matches another cookie
+ * @param {chrome.cookies.Cookie} cookie1
+ * @param {chrome.cookies.Cookie} cookie2
+ * @returns {Bool}
+ */
+function checkCookieMatch(cookie1, cookie2) {
+    if (!cookie1 || !cookie2) return false; //Safety check for missing input
+    //Name and path must match for cookies to be the same
+    if (cookie1.name !== cookie2.name) return false;
+    if (cookie1.path !== cookie2.path) return false;
+
+    if (normaliseDomain(cookie1.domain) !== normaliseDomain(cookie2.domain)) return false;
+    if (normalisePartitionKey(cookie1.partitionKey) !== normalisePartitionKey(cookie2.partitionKey)) return false;
+    return true;
+}
+
+/**
+ * Standardises the domain property of a cookie
+ * @param {String | null} domain
+ * @returns {String | null}
+ */
+function normaliseDomain(domain) {
+    if (!domain) return null;
+    //Cuts off leading dot and converts to lowercase as they are case insensitive
+    return domain.startsWith(".") ? domain.slice(1).toLowerCase() : domain.toLowerCase();
+}
+
+/**
+ * Standardises the partitionKey property of a cookie
+ * @param {Object | String | null | undefined} partitionKey
+ * @returns {String | null}
+ */
+function normalisePartitionKey(partitionKey) {
+    if (!partitionKey) return null;
+    if (typeof partitionKey === "string") return partitionKey; //No reformatting needed
+    return partitionKey.topLevelSite || null; //Extracts topLevelSite from object if object
+}
