@@ -1,5 +1,10 @@
-//Deletes all cookies passed to it
-//List[Dict] -> Bool
+import {store} from './recyclingBin.js';
+
+/**
+ * Deletes all cookies passed to it
+ * @param {chrome.cookies.Cookie[]} cookies - List of cookie objects to be deleted
+ * @returns {Promise<Bool>} - Success flag
+ */
 export async function purgeCookies(cookies) {
     //Runs all deletions in parallel & pauses until they are completed
     const results = await Promise.allSettled(cookies.map(cookie => purgeCookie(cookie))); //List[{name, url, storeId}]
@@ -18,8 +23,11 @@ export async function purgeCookies(cookies) {
     return allSuccess;
 }
 
-//Wipes all cookies passed to it
-//List[Dict] -> Bool
+/**
+ * Wipes all cookies passed to it
+ * @param {chrome.cookies.Cookie[]} cookies - List of cookie objects to be wiped
+ * @returns {Promise<Bool>} - Success flag
+ */
 export async function wipeCookies(cookies) {
     //Runs all wipes in parallel & pauses until they are completed
     const results = await Promise.allSettled(cookies.map(cookie => wipeCookie(cookie))); //List[Dict]
@@ -39,8 +47,11 @@ export async function wipeCookies(cookies) {
 }
 
 
-//Takes pulled cookie data and constructs its URL
-//Dict -> String
+/**
+ * Inserts a URL property into an input cookie
+ * @param {chrome.cookies.Cookie} cookie - Cookie object to be modified
+ * @returns {String} - Constructed URL
+ */
 function getURL(cookie) {
     if (cookie.url) return cookie.url;
 
@@ -65,8 +76,11 @@ function getURL(cookie) {
     return constructURL;
 }
 
-//Deletes a specific cookie from the browser
-//Dict -> {String, String, String} | Null
+/**
+ * Deletes a specific cookie from the browser
+ * @param {chrome.cookies.Cookie} cookie
+ * @returns {Promise<chrome.cookies.Cookie | null>}
+ */
 async function purgeCookie(cookie) {
 
     //Constructs separate cookie, prevents sending out unnecessary user details
@@ -85,6 +99,7 @@ async function purgeCookie(cookie) {
 
         if (result) {
             console.log(`Successfully deleted cookie: ${result.name}`);
+            store(cookie); //Stores deleted cookie in recycling bin
         } else {
             console.warn(`Failed to delete cookie ${cookie.name}`);
         }
@@ -96,8 +111,11 @@ async function purgeCookie(cookie) {
     }
 }
 
-//Wipes the value of a cookie to prevent it from tracking a user
-//Dict -> Dict | Null
+/**
+ * //Wipes the value of a cookie to prevent it from tracking a user
+ * @param {chrome.cookies.Cookie} cookie
+ * @returns {Promise<chrome.cookies.Cookie | null>}
+ */
 async function wipeCookie(cookie) {
     let cookieDetails = cookie;
     getURL(cookieDetails);
@@ -113,6 +131,7 @@ async function wipeCookie(cookie) {
 
         if (result) {
             console.log(`Successfully neutralized cookie: ${result.name}`);
+            store(cookie); //Stores wiped cookie in recycling bin
         } else {
             console.warn(`Failed to wipe cookie ${cookie.name}`);
         }
