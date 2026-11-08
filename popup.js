@@ -1,4 +1,4 @@
-import {getAllCookies} from "./CookieHandler.js";
+import {getAllCookies} from "./Storage/CookieHandler.js";
 
 document.getElementById('clickBtn').addEventListener('click', async () => {
     alert('Dumping cookies to console');
