@@ -1,20 +1,16 @@
-//NEED TO CREATE SYSTEM FOR ID TRACING OF COOKIES
+//The recycling bin stores deleted cookies and ensures they don't reappear
 
 //Exported functions
 
 /**
  * Stores a cookie that has been deleted
  * @param {chrome.cookies.Cookie} cookie
- * @returns {Promise<int>} - ID of the stored cookie, with a failure value of -1
+ * @returns {Promise<int>} - Index of the stored cookie, with a failure value of -1
  */
 export async function store(cookie) {
     try {
-        //Generate a unique ID for the cookie if it doesn't have one
-        if (!cookie.id) {
-            cookie.id = `${cookie.name}-${cookie.domain}-${cookie.path}-${Date.now()}`;
-        }
         bin.push(cookie);
-        return cookie.id;
+        return bin.length - 1; //Returns last index where the cookie was pushed
     } catch (error) {
         console.error(`Error storing cookie ${cookie.name}: ${error}`);
         return -1;
@@ -31,34 +27,24 @@ export async function binSize() {
 
 /**
  * Fetches a deleted cookie
- * @param {String} id - Cookie ID
+ * @param {String} idx - Cookie index
  * @param {Bool} del - Whether to delete the cookie after fetching it
  * @returns {Promise<chrome.cookies.Cookie | null>} - Cookie object or null if not found
  */
-export async function get(id, del) {
+export async function get(idx, del = false) {
     try {
-        let cookie = bin.find(cookie => cookie.id === id) || null; //Cookie|Null //Ensure cookies have IDs
+        let cookie = bin[idx] || null; //Cookie|Null //Fetch cookie by index
         //Only deletes if cookie found
-        if (del && cookie) bin = bin.filter(cookie => cookie.id !== id);
+        if (del && cookie) bin.splice(idx, 1); //Deletes cookie from bin
         return cookie;
     } catch (error) {
-        console.error(`Error fetching cookie with ID ${id}: ${error}`);
+        console.error(`Error fetching cookie at index ${idx}: ${error}`);
         return null;
     }
 }
 
 /**
- * Outputs IDs of all deleted cookies
- * MIGHT LEAK TOO MUCH DATA DUE TO ABILITY TO SCAN ENTIRE BIN WITH THIS
- * @returns {Promise<String[]>} - Array of cookie IDs
- */
-export async function getIDs() {
-    return bin.map(cookie => cookie.id);
-}
-
-/**
  * Outputs all deleted cookies
- * MIGHT LEAK TOO MUCH DATA DUE TO ABILITY TO SCAN ENTIRE BIN WITH THIS
  * @returns {Promise<chrome.cookies.Cookie[]>} - Array of deleted cookie objects
  */
 export async function getAll() {
@@ -79,6 +65,28 @@ export async function checkBin(cookie) {
         return bin.some(c => checkCookieMatch(c, cookie));
     } catch (error) {
         console.error(`Error checking cookie ${cookie.name} in bin: ${error}`);
+        return false;
+    }
+}
+
+/**
+ * Regenerates a deleted cookie
+ * @param {String} idx - Index of the cookie to be regenerated
+ * @returns {Promise<Bool>} - If cookie was successfully revived
+ */
+export async function regen(idx) {
+    try {
+        const cookie = await get(idx, false); //Doesn't delete cookie until regen success
+        if (!cookie) {
+            console.error(`Cookie at index ${idx} not found in bin`);
+            return false;
+        }
+
+        await chrome.cookies.set(cookie);
+
+        return true;
+    } catch (error) {
+        console.error(`Error regenerating cookie at index ${idx}: ${error}`);
         return false;
     }
 }

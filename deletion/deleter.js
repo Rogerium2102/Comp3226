@@ -99,7 +99,7 @@ async function purgeCookie(cookie) {
 
         if (result) {
             console.log(`Successfully deleted cookie: ${result.name}`);
-            store(cookie); //Stores deleted cookie in recycling bin
+            await store(cookie); //Stores deleted cookie in recycling bin
         } else {
             console.warn(`Failed to delete cookie ${cookie.name}`);
         }
@@ -131,7 +131,7 @@ async function wipeCookie(cookie) {
 
         if (result) {
             console.log(`Successfully neutralized cookie: ${result.name}`);
-            store(cookie); //Stores wiped cookie in recycling bin
+            await store(cookie); //Stores wiped cookie in recycling bin
         } else {
             console.warn(`Failed to wipe cookie ${cookieDetails.name}`);
         }

@@ -3,6 +3,7 @@ import { checkBin } from "./deletion/recyclingBin.js";
 
 console.log("Cookie rejected\nEverything's fine. Don't worry.");
 
+/*
 //Listens whenever cookies are added, edited or deleted.
 chrome.cookies.onChanged.addListener(async (info) => {
     const {cookie, cause, deleted} = info; //Unpacks info
@@ -15,3 +16,4 @@ chrome.cookies.onChanged.addListener(async (info) => {
         });
     }
 });
+*/
