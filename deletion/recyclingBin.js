@@ -5,12 +5,18 @@
 /**
  * Stores a cookie that has been deleted
  * @param {chrome.cookies.Cookie} cookie
+ * @param {Bool} wiped - Whether the cookie was wiped rather than deleted
  * @returns {Promise<int>} - Index of the stored cookie, with a failure value of -1
  */
-export async function store(cookie) {
+export async function store(cookie, wiped) {
     try {
-        bin.push(cookie);
-        return bin.length - 1; //Returns last index where the cookie was pushed
+        cookie.wiped = wiped;
+        if (wiped) {
+            wipeBin.push(cookie);
+        } else {
+            deleteBin.push(cookie);
+        }
+        return (wiped ? wipeBin : deleteBin).length - 1; //Returns last index where the cookie was pushed
     } catch (error) {
         console.error(`Error storing cookie ${cookie.name}: ${error}`);
         return -1;
@@ -18,11 +24,11 @@ export async function store(cookie) {
 }
 
 /**
- * Outputs number of deleted cookies
+ * Outputs total number of deleted cookies
  * @returns {Promise<int>} - Number of deleted cookies in bin
  */
 export async function binSize() {
-    return bin.length;
+    return wipeBin.length + deleteBin.length;
 }
 
 /**
@@ -33,9 +39,17 @@ export async function binSize() {
  */
 export async function get(idx, del = false) {
     try {
-        let cookie = bin[idx] || null; //Cookie|Null //Fetch cookie by index
+        let cookie = null; //Cookie|Null //Fetch cookie by index
+        //Check both bins for the cookie
+        if (idx < deleteBin.length) cookie = deleteBin[idx];
+        else if (idx < wipeBin.length) cookie = wipeBin[idx];
+
         //Only deletes if cookie found
-        if (del && cookie) bin.splice(idx, 1); //Deletes cookie from bin
+        if (del && cookie) {
+            if (cookie.wiped) wipeBin.splice(idx, 1);
+            else deleteBin.splice(idx, 1);
+        }
+        cookie.wiped = null; //Removes wiped property from cookie before returning it
         return cookie;
     } catch (error) {
         console.error(`Error fetching cookie at index ${idx}: ${error}`);
@@ -48,24 +62,24 @@ export async function get(idx, del = false) {
  * @returns {Promise<chrome.cookies.Cookie[]>} - Array of deleted cookie objects
  */
 export async function getAll() {
-    return bin;
+    return [...deleteBin, ...wipeBin];
 }
 
 /**
  * Checks whether an input cookie has already been deleted
  * @param {chrome.cookies.Cookie} cookie - Cookie object to be checked
- * @returns {Promise<Bool>} - If cookie matches an existing cookie in the bin
+ * @returns {Promise<Bool, Bool|null>} - If cookie matches an existing cookie in the bin
  */
 export async function checkBin(cookie) {
     if (!cookie) {
         console.error("No cookie provided for bin check");
-        return false;
+        return (false, null);
     }
     try {
-        return bin.some(c => checkCookieMatch(c, cookie));
+        return deleteBin.some(c => checkCookieMatch(c, cookie)) || wipeBin.some(c => checkCookieMatch(c, cookie));
     } catch (error) {
         console.error(`Error checking cookie ${cookie.name} in bin: ${error}`);
-        return false;
+        return (false, null);
     }
 }
 
@@ -93,7 +107,10 @@ export async function regen(idx) {
 
 //Local functions
 
-let bin = [] //List[Cookie] //Recycling bin for deleted cookies
+let itemQueue = [] //List[Dict[List[Cookie]:Bool]] //Queue of cookies to be stored in wipe/delete bin
+
+let deleteBin = [] //List[Cookie] //Recycling bin for deleted cookies
+let wipeBin = [] //List[Cookie] //Recycling bin for wiped cookies
 
 /**
  * Checks if a cookie matches another cookie

@@ -1,4 +1,4 @@
-import {store} from './recyclingBin.js';
+import {store, checkBin} from './recyclingBin.js';
 
 /**
  * Deletes all cookies passed to it
