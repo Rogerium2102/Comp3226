@@ -1,1 +1,0 @@
-console.log("Cookie rejected\nEverything's fine. Don't worry.");
