@@ -1,5 +1,7 @@
 //The recycling bin stores deleted cookies and ensures they don't reappear
 
+import { purgeCookie, wipeCookie } from "./cookieDeleter";
+
 //Exported functions
 
 /**
@@ -83,21 +85,27 @@ export async function getAll() {
 /**
  * Checks whether an input cookie has already been deleted
  * @param {chrome.cookies.Cookie} cookie - Cookie object to be checked
- * @returns {Promise<Bool[2]>} - If cookie matches an existing cookie and whether it is from the wipe bin or delete bin
+ * @returns {Promise<Dict>} - Holds match flag and function to erase cookie if true
  */
 export async function checkBin(cookie) {
     if (deleteBin === null || wipeBin === null) await loadBins();
     if (!cookie) {
         console.error("No cookie provided for bin check");
-        return [false, false];
+        return { match : false, func : null };
     }
     try {
         const inDeleteBin = deleteBin.some(c => checkCookieMatch(c, cookie));
         const inWipeBin = inDeleteBin ? false : wipeBin.some(c => checkCookieMatch(c, cookie)); //Only checks wipe bin if not in delete bin
-        return [inDeleteBin || inWipeBin, inWipeBin]; //Either bin, specific bin
+
+        if (inDeleteBin || inWipeBin) {
+            const nextFunc = inDeleteBin ? purgeCookie : wipeCookie;
+            return { match : true, func : nextFunc };
+        } else {
+            return { match : false, func : null };
+        }
     } catch (error) {
         console.error(`Error checking cookie ${cookie.name} in bin: ${error}`);
-        return [false, false];
+        return { match : false, func : null };
     }
 }
 

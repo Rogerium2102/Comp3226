@@ -59,7 +59,7 @@ export async function wipeCookies(cookies) {
 /**
  * Deletes a specific cookie from the browser
  * @param {chrome.cookies.Cookie} cookie
- * @returns {Promise<chrome.cookies.Cookie | null>}
+ * @returns {Promise<Bool>}
  */
 export async function purgeCookie(cookie) {
     try {
@@ -83,17 +83,17 @@ export async function purgeCookie(cookie) {
             console.warn(`Failed to delete cookie ${cookie.name}`);
         }
 
-        return result;
+        return true;
     } catch (err) {
         console.error(`Failed to delete cookie ${cookie.name}:`, err);
-        return null;
+        return false;
     }
 }
 
 /**
  * //Wipes the value of a cookie to prevent it from tracking a user
  * @param {chrome.cookies.Cookie} cookie
- * @returns {Promise<chrome.cookies.Cookie | null>}
+ * @returns {Promise<Bool>}
  */
 export async function wipeCookie(cookie) {
     try {
@@ -112,9 +112,9 @@ export async function wipeCookie(cookie) {
             console.warn(`Failed to wipe cookie ${cookieDetails.name}`);
         }
 
-        return result;
+        return true;
     } catch (err) {
         console.error(`Failed to wipe cookie ${cookieDetails.name}:`, err);
-        return null;
+        return false;
     }
 }
