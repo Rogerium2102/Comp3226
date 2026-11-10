@@ -1,4 +1,4 @@
-import {getAllCookies} from "./CookieHandler.js";
+import {getAllCookies} from "./Storage/CookieHandler.js";
 
 export async function dumpCookies(){
     alert('Dumping cookies to console');
