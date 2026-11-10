@@ -61,7 +61,7 @@ export async function wipeCookies(cookies) {
  * @param {chrome.cookies.Cookie} cookie
  * @returns {Promise<chrome.cookies.Cookie | null>}
  */
-async function purgeCookie(cookie) {
+export async function purgeCookie(cookie) {
     try {
         //Constructs separate cookie, prevents sending out unnecessary user details
         const cookieDetails = {
@@ -95,7 +95,7 @@ async function purgeCookie(cookie) {
  * @param {chrome.cookies.Cookie} cookie
  * @returns {Promise<chrome.cookies.Cookie | null>}
  */
-async function wipeCookie(cookie) {
+export async function wipeCookie(cookie) {
     try {
         let cookieDetails = {...cookie}; //Creates shallow copy of cookie for editing
         getURL(cookieDetails);
