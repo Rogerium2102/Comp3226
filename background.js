@@ -1,4 +1,3 @@
-import { deleteCookie } from "./deletion/cookie-deleter.js";
 import { checkBin } from "./deletion/recyclingBin.js";
 
 console.log("Cookie rejected\nEverything's fine. Don't worry.");
