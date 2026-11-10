@@ -1,0 +1,16 @@
+{
+  "manifest_version": 3,
+  "name": "knowchip",
+  "version": "0.67",
+  "description": "Cookie Managing Extension",
+  "action": {
+    "default_popup": "index.html"
+  },
+  "permissions": [
+    "cookies",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ]
+}

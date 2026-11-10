@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Template",
-  "version": "0.1",
-  "description": "Minimal Chrome extension",
+  "name": "knowchip",
+  "version": "0.67",
+  "description": "Cookie Managing Extension",
   "action": {
     "default_popup": "index.html"
   },
