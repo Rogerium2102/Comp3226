@@ -14,8 +14,7 @@ export async function store(cookie, wiped) {
     //Loads bins from local storage if they haven't been loaded yet
     if (deleteBin === null || wipeBin === null) await loadBins();
     try {
-        const key = wiped ? "wipeBin" : "deleteBin";
-        const selectedBin = wiped ? wipeBin : deleteBin;
+        const { key, selectedBin } = cookieKeys(wiped);
 
         selectedBin.push(cookie);
 
@@ -48,6 +47,7 @@ export async function get(idx, wiped, del = false) {
     //Loads bins from local storage if they haven't been loaded yet
     if (deleteBin === null || wipeBin === null) await loadBins();
     try {
+        const { key, selectedBin } = cookieKeys(wiped);
         //Catches -1 idx values
         if (typeof idx !== 'number' || idx < 0) {
             console.error(`Invalid index ${idx} provided for cookie retrieval`);
@@ -57,15 +57,11 @@ export async function get(idx, wiped, del = false) {
         let cookie = null; //Cookie|Null //Fetch cookie by index
         
         //Check both bins for the cookie
-        if (wiped && idx < wipeBin.length) cookie = wipeBin[idx];
-        else if (!wiped && idx < deleteBin.length) cookie = deleteBin[idx];
+        if (idx < selectedBin.length) cookie = selectedBin[idx];
 
         //Only deletes if cookie found
-        if (del && cookie) {
-            if (wiped) wipeBin.splice(idx, 1);
-            else deleteBin.splice(idx, 1);
-        }
-        //THIS NEEDS TO UPDATE LOCAL STORAGE IF DELETED, OTHERWISE THE COOKIE WILL REAPPEAR ON RELOAD
+        if (del && cookie) await removeCookie(idx, key, selectedBin);
+
         return cookie;
     } catch (error) {
         console.error(`Error fetching cookie at index ${idx}: ${error}`);
@@ -125,6 +121,10 @@ export async function regen(idx, wiped) {
         if (!cookie.url) getURL(cookie); //Cookies are required to be set with a URL
         cleanCookie(cookie);
         await chrome.cookies.set(cookie);
+
+        const { key, selectedBin } = cookieKeys(wiped);
+        await removeCookie(idx, key, selectedBin); //Deletes cookie from bin only after success
+
         return true;
     } catch (error) {
         console.error(`Error regenerating cookie at index ${idx}: ${error}`);
@@ -240,10 +240,41 @@ async function loadBins() {
             wipeBin = result.wipeBin || [];
             return true;
         }
-    } catch (error) {
-        console.error(`Error loading bins from local storage: ${error}`);
+    } catch (err) {
+        console.error(`Error loading bins from local storage: ${err}`);
         deleteBin = deleteBin || []; //Inits empty array if local storage fails
         wipeBin = wipeBin || [];
+        return false;
+    }
+}
+
+/**
+ * Gets data to push cookie bins to local storage
+ * @param {Bool} wiped
+ * @returns {Dict} - Returns storage key and local cookies to push
+ */
+function cookieKeys(wiped) {
+    return {
+        key : (wiped ? "wipeBin" : "deleteBin"),
+        selectedBin : (wiped ? wipeBin : deleteBin)
+    };
+}
+
+/**
+ * Removes a cookie from memory and local storage
+ * @param {int} idx
+ * @param {string} key
+ * @param {List[Cookie]} selectedBin
+ * @returns {Bool} - Success flag
+ */
+async function removeCookie(idx, key, selectedBin) {
+    try {
+        selectedBin.splice(idx, 1);
+        //Pushes whole updated bin to storage (can't select one to delete)
+        await chrome.storage.local.set({ [key] : selectedBin });
+        return true;
+    } catch (err) {
+        console.error(`Error deleting cookie from bin: ${err}`);
         return false;
     }
 }
