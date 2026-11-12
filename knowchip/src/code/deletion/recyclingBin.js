@@ -5,66 +5,82 @@ import { purgeCookie, wipeCookie } from "./cookieDeleter";
 //Exported functions
 
 /**
- * Stores a cookie that has been deleted
- * @param {chrome.cookies.Cookie} cookie
+ * Stores a cookie/tracker that has been deleted
+ * @param {chrome.cookies.Cookie | String} entry
  * @param {Bool} wiped - Whether the cookie was wiped rather than deleted
  * @returns {Promise<int>} - Index of the stored cookie, with a failure value of -1
  */
-export async function store(cookie, wiped) {
-    //Loads bins from local storage if they haven't been loaded yet
-    if (deleteBin === null || wipeBin === null) await loadBins();
+export async function store(entry, wiped) {
+    let isCookie; //Bool
+    let name; //String //Error output
     try {
-        const { key, selectedBin } = cookieKeys(wiped);
+        isCookie = !(typeof entry === "string");
+        name = isCookie ? entry.name : entry;
+    } catch (err) {
+        console.error(`Invalid entry input to store: ${err}`);
+        return -1;
+    }
 
-        selectedBin.push(cookie);
+    //Loads bins from local storage if they haven't been loaded yet
+    if (deleteBin === null || wipeBin === null || trackerBin === null) await loadBins();
+    try {
+        const { key, selectedBin } = getKeys(isCookie, wiped);
+
+        selectedBin.push(entry);
 
         await chrome.storage.local.set({ [key] : selectedBin }); //Backups the updated bin in local storage
 
-        return (wiped ? wipeBin : deleteBin).length - 1; //Returns last index where the cookie was pushed
-    } catch (error) {
-        console.error(`Error storing cookie ${cookie.name}: ${error}`);
+        return selectedBin.length - 1; //Returns last index where the cookie was pushed
+    } catch (err) {
+        console.error(`Error storing ${isCookie ? "cookie" : "tracker"} ${name}: ${err}`);
         return -1;
     }
 }
 
 /**
  * Outputs total number of deleted cookies
+ * @param {Bool} isCookie - Whether a cookie or a tracker needs to be grabbed
+ * @param {Bool} wiped - Whether the cookie is from the wipe bin or delete bin
  * @returns {Promise<int>} - Number of deleted cookies in bin
  */
-export async function binSize() {
-    if (deleteBin === null || wipeBin === null) await loadBins();
-    return wipeBin.length + deleteBin.length;
+export async function binSize(isCookie, wiped = false) {
+    if (deleteBin === null || wipeBin === null || trackerBin === null) await loadBins();
+    if (isCookie) {
+        if (wiped)  return wipeBin.length;
+        else        return deleteBin.length;
+    } else          return trackerBin.length;
 }
 
 /**
- * Fetches a deleted cookie
- * @param {String} idx - Cookie index
+ * Fetches a deleted cookie/tracker
+ * @param {String} idx - Cookie/Tracker index
+ * @param {Bool} isCookie - Whether a cookie or a tracker needs to be grabbed
  * @param {Bool} wiped - Whether the cookie is from the wipe bin or delete bin
- * @param {Bool} del - Whether to delete the cookie after fetching it
+ * @param {Bool} del - Whether to delete the cookie/tracker after fetching it
  * @returns {Promise<chrome.cookies.Cookie | null>} - Cookie object or null if not found
  */
-export async function get(idx, wiped, del = false) {
+export async function get(idx, isCookie, wiped = false, del = false) {
     //Loads bins from local storage if they haven't been loaded yet
-    if (deleteBin === null || wipeBin === null) await loadBins();
+    if (deleteBin === null || wipeBin === null || trackerBin === null) await loadBins();
     try {
-        const { key, selectedBin } = cookieKeys(wiped);
+        const { key, selectedBin } = getKeys(isCookie, wiped);
         //Catches -1 idx values
-        if (typeof idx !== 'number' || idx < 0) {
+        if (typeof idx !== "number" || idx < 0) {
             console.error(`Invalid index ${idx} provided for cookie retrieval`);
             return null;
         }
 
-        let cookie = null; //Cookie|Null //Fetch cookie by index
+        let entry = null; //Cookie|String|Null //Fetch cookie/tracker by index
         
         //Check both bins for the cookie
-        if (idx < selectedBin.length) cookie = selectedBin[idx];
+        if (idx < selectedBin.length) entry = selectedBin[idx];
 
         //Only deletes if cookie found
-        if (del && cookie) await removeCookie(idx, key, selectedBin);
+        if (del && entry) await removeEntry(idx, key, selectedBin);
 
-        return cookie;
-    } catch (error) {
-        console.error(`Error fetching cookie at index ${idx}: ${error}`);
+        return entry;
+    } catch (err) {
+        console.error(`Error fetching cookie at index ${idx}: ${err}`);
         return null;
     }
 }
@@ -73,61 +89,85 @@ export async function get(idx, wiped, del = false) {
  * Outputs all deleted cookies
  * @returns {Promise<chrome.cookies.Cookie[]>} - Array of deleted cookie objects
  */
-export async function getAll() {
+export async function getCookies() {
     if (deleteBin === null || wipeBin === null) await loadBins();
     return [...deleteBin, ...wipeBin];
 }
 
 /**
- * Checks whether an input cookie has already been deleted
- * @param {chrome.cookies.Cookie} cookie - Cookie object to be checked
+ * Outputs all deleted trackers
+ * @returns {Promise<String[]>} - Array of deleted tracker objects
+ */
+export async function getTrackers() {
+    if (trackerBin === null) await loadBins();
+    return trackerBin;
+}
+
+/**
+ * Checks whether an input cookie/tracker has already been deleted
+ * @param {chrome.cookies.Cookie | String} entry - Cookie/tracker object to be checked
  * @returns {Promise<Dict>} - Holds match flag and function to erase cookie if true
  */
-export async function checkBin(cookie) {
-    if (deleteBin === null || wipeBin === null) await loadBins();
-    if (!cookie) {
-        console.error("No cookie provided for bin check");
+export async function checkBin(entry) {
+    if (deleteBin === null || wipeBin === null || trackerBin === null) await loadBins();
+    if (!entry) {
+        console.error("No value provided for bin check");
         return { match : false, func : null };
     }
+    const name = typeof entry === "string" ? entry : entry.name; //Error response name
     try {
-        const inDeleteBin = deleteBin.some(c => checkCookieMatch(c, cookie));
-        const inWipeBin = inDeleteBin ? false : wipeBin.some(c => checkCookieMatch(c, cookie)); //Only checks wipe bin if not in delete bin
-
-        if (inDeleteBin || inWipeBin) {
-            const nextFunc = inDeleteBin ? purgeCookie : wipeCookie;
-            return { match : true, func : nextFunc };
+        if (typeof entry === "string") {
+            //Tracker
+            if (trackerBin.some(t => t === entry)) return { match : true, func : null }; //Func is null in lieu of tracking deletion function
+            else return { match : false, func : null }; 
         } else {
-            return { match : false, func : null };
+            //Cookies
+            const inDeleteBin = deleteBin.some(c => checkCookieMatch(c, entry));
+            const inWipeBin = inDeleteBin ? false : wipeBin.some(c => checkCookieMatch(c, entry)); //Only checks wipe bin if not in delete bin
+
+            if (inDeleteBin || inWipeBin) {
+                const nextFunc = inDeleteBin ? purgeCookie : wipeCookie;
+                return { match : true, func : nextFunc };
+            } else {
+                return { match : false, func : null };
+            }
         }
-    } catch (error) {
-        console.error(`Error checking cookie ${cookie.name} in bin: ${error}`);
+    } catch (err) {
+        console.error(`Error checking cookie ${name} in bin: ${err}`);
         return { match : false, func : null };
     }
 }
 
 /**
- * Regenerates a deleted cookie
- * @param {String} idx - Index of the cookie to be regenerated
+ * Regenerates a deleted cookie/tracker
+ * @param {String} idx - Index of the cookie/tracker to be regenerated
+ * @param {Bool} isCookie - Whether a cookie or a tracker needs to be regened
  * @param {Bool} wiped - Whether the cookie is from the wipe bin or delete bin
- * @returns {Promise<Bool>} - If cookie was successfully revived
+ * @returns {Promise<Bool>} - If cookie/tracker was successfully revived
  */
-export async function regen(idx, wiped) {
+export async function regen(idx, isCookie, wiped = false) {
     try {
-        const cookie = await get(idx, wiped, false); //Doesn't delete cookie until regen success
-        if (!cookie) {
-            console.error(`Cookie at index ${idx} not found in bin`);
+        const entry = await get(idx, isCookie, wiped, false); //Doesn't delete cookie until regen success
+        if (!entry) {
+            console.error(`Entry at index ${idx} not found in bin`);
             return false;
         }
-        if (!cookie.url) getURL(cookie); //Cookies are required to be set with a URL
-        cleanCookie(cookie);
-        await chrome.cookies.set(cookie);
 
-        const { key, selectedBin } = cookieKeys(wiped);
-        await removeCookie(idx, key, selectedBin); //Deletes cookie from bin only after success
+        if (isCookie) {
+            if (!entry.url) getURL(entry); //Cookies are required to be set with a URL
+            cleanCookie(entry);
+            await chrome.cookies.set(entry);
+        } else {
+            console.error(`Regenerating trackers not implemented`);
+            return false
+        }
+
+        const { key, selectedBin } = getKeys(isCookie, wiped);
+        await removeEntry(idx, key, selectedBin); //Deletes cookie from bin only after success
 
         return true;
-    } catch (error) {
-        console.error(`Error regenerating cookie at index ${idx}: ${error}`);
+    } catch (err) {
+        console.error(`Error regenerating cookie/tracker at index ${idx}: ${err}`);
         return false;
     }
 }
@@ -141,13 +181,13 @@ export function getURL(cookie) {
     if (cookie.url) return cookie.url;
 
     //Validation
-    if (typeof cookie.secure !== 'boolean') {
+    if (typeof cookie.secure !== "boolean") {
         throw new TypeError(`Cookie ${cookie.name} is missing secure property`);
     }
-    if (typeof cookie.path !== 'string' || cookie.path.trim() === '') {
+    if (typeof cookie.path !== "string" || cookie.path.trim() === "") {
         throw new TypeError(`Cookie ${cookie.name} is missing path property`);
     }
-    if (typeof cookie.domain !== 'string' || cookie.domain.trim() === '') {
+    if (typeof cookie.domain !== "string" || cookie.domain.trim() === "") {
         throw new TypeError(`Cookie ${cookie.name} is missing domain property`);
     }
 
@@ -188,6 +228,7 @@ export function cleanCookie(cookie) {
 
 let deleteBin = null //List[Cookie] //Recycling bin for deleted cookies
 let wipeBin = null //List[Cookie] //Recycling bin for wiped cookies
+let trackerBin = null //List[String] //Recycling bin for deleted tracker keys (there's no point in wiping trackers)
 
 /**
  * Checks if a cookie matches another cookie
@@ -234,40 +275,43 @@ function normalisePartitionKey(partitionKey) {
  */
 async function loadBins() {
     try {
-        if (deleteBin === null || wipeBin === null) {
-            const result = await chrome.storage.local.get(["deleteBin", "wipeBin"]);
+        if (deleteBin === null || wipeBin === null || trackerBin === null) {
+            const result = await chrome.storage.local.get(["deleteBin", "wipeBin", "trackerBin"]);
             deleteBin = result.deleteBin || []; //Grabs local storage data or inits empty array otherwise
             wipeBin = result.wipeBin || [];
+            trackerBin = result.trackerBin || [];
             return true;
         }
     } catch (err) {
         console.error(`Error loading bins from local storage: ${err}`);
         deleteBin = deleteBin || []; //Inits empty array if local storage fails
         wipeBin = wipeBin || [];
+        trackerBin = trackerBin || [];
         return false;
     }
 }
 
 /**
  * Gets data to push cookie bins to local storage
+ * @param {Bool} isCookie
  * @param {Bool} wiped
  * @returns {Dict} - Returns storage key and local cookies to push
  */
-function cookieKeys(wiped) {
+function getKeys(isCookie, wiped) {
     return {
-        key : (wiped ? "wipeBin" : "deleteBin"),
-        selectedBin : (wiped ? wipeBin : deleteBin)
+        key : (isCookie ? (wiped ? "wipeBin" : "deleteBin") : "trackerBin"),
+        selectedBin : (isCookie ? (wiped ? wipeBin : deleteBin) : trackerBin)
     };
 }
 
 /**
- * Removes a cookie from memory and local storage
+ * Removes a cookie/tracker from memory and local storage
  * @param {int} idx
  * @param {string} key
  * @param {List[Cookie]} selectedBin
- * @returns {Bool} - Success flag
+ * @returns {Promise<Bool>} - Success flag
  */
-async function removeCookie(idx, key, selectedBin) {
+async function removeEntry(idx, key, selectedBin) {
     try {
         selectedBin.splice(idx, 1);
         //Pushes whole updated bin to storage (can't select one to delete)
