@@ -1,3 +1,4 @@
+
 async function getAllCookiesInternal() {
     try {
         const cookies = await chrome.cookies.getAll({});
@@ -13,7 +14,7 @@ let memoryCache = [];
 let cacheExpiry = 0;
 /**
  * Gets all cookies stored on the user's device.
- * @returns {Array<object>}
+ * @returns {Promise<Array<import('../../Interfaces').ChromeCookie>>}
  */
 export async function getAllCookies() {
     try {
