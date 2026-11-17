@@ -1,6 +1,6 @@
 import { dumpCookies } from "./popup";
 
-export function HomePage({ onNavigate }: any){
+export function HomePage({ onNavigate }){
     return(
 <div className='w-72 p-4 bg-gray-50 rounded-lg shadow-md font-sans'>
       <h2 className='text-xl font-bold mb-2 text-gray-800'>Cookie thing</h2>

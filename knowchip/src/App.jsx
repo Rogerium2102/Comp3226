@@ -1,10 +1,10 @@
 
 import { useState } from 'react'
 import './App.css'
-import { HomePage } from './code/HomePage.tsx';
-import { CookiePage } from './code/CookiePage.tsx';
+import { HomePage } from './code/HomePage.jsx';
+import { CookiePage } from './code/CookiePage.jsx';
 function App() {
-  const [currentPage, setCurrentPage] = useState<'home' | 'cookies' | 'settings'>('home');
+  const [currentPage, setCurrentPage] = useState('home');
   return (
     <div>
       {currentPage === 'home' && <HomePage onNavigate={setCurrentPage} />}
