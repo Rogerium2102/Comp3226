@@ -12,7 +12,7 @@ const bannerProfiles = [
  * Gets the cookie banner on a page, null is none is detected
  * @return {Element}
  */
-export function getBanner() {
+export function getBanner(document) {
     return document.querySelector(bannerProfiles);
 }
 
