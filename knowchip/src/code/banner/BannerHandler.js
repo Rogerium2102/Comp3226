@@ -1,3 +1,5 @@
+import {runSelectorOnTab} from "../background/tabWorker.js"
+
 const bannerProfiles = [
     '#onetrust-consent-sdk',
     '#CybotCookiebotDialog',
@@ -13,7 +15,7 @@ const bannerProfiles = [
  * @return {Element}
  */
 export function getBanner(document) {
-    return document.querySelector(bannerProfiles);
+    return runSelectorOnTab(bannerProfiles)
 }
 
 const wait = (seconds) => new Promise(resolve => setTimeout(resolve, seconds * 1000));

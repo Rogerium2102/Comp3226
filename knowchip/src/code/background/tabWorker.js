@@ -1,4 +1,4 @@
-async function getCurrentPage() {
+export async function getCurrentPage() {
     const tab = await getCurrentTab();
     const results = await chrome.scripting.executeScript({
         target: tab.id,
@@ -25,7 +25,7 @@ async function getCurrentTab() {
     return tab;
 }
 
-async function runSelectorOnTab(selector) {
+export async function runSelectorOnTab(selector) {
     const tab = await getCurrentTab();
     const [{result}] = await chrome.scripting.executeScript({
         target: tab.id,
