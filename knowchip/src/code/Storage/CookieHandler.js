@@ -12,6 +12,13 @@ export async function getAllCookiesInternal() {
 const CACHE_TTL_MS = 5 * 60 * 1000;
 let memoryCache = [];
 let cacheExpiry = 0;
+
+export async function invalidateCache() {
+    cacheExpiry = Date.now();
+    await chrome.storage.session.set({
+        sessionExpiry: Date.now()
+    });
+}
 /**
  * Gets all cookies stored on the user's device.
  * @returns {Promise<Array<import('../../Interfaces').ChromeCookie>>}
