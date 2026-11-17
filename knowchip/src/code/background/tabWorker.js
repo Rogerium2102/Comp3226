@@ -1,5 +1,8 @@
+import {runBannerHandler} from "../banner/BannerHandler.js";
+
 export async function getCurrentPage() {
     const tab = await getCurrentTab();
+    if (tab === null) return null;
     const results = await chrome.scripting.executeScript({
         target: tab.id,
         func: () => {
@@ -17,8 +20,8 @@ export async function getCurrentPage() {
 }
 
 async function getCurrentTab() {
-    const [tab] = chrome.tabs.query({active: true, currentWindow: true});
-    if (!tab.id || !tab.url?.startsWith('http')) {
+    const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+    if (!tab?.id || !tab.url?.startsWith('http')) {
         console.warn("Unable to acquire current tab");
         return null;
     }
@@ -27,6 +30,7 @@ async function getCurrentTab() {
 
 export async function runSelectorOnTab(selector) {
     const tab = await getCurrentTab();
+    if (tab === null) return null;
     const [{result}] = await chrome.scripting.executeScript({
         target: tab.id,
         args: [selector],
@@ -44,4 +48,13 @@ export async function runSelectorOnTab(selector) {
         },
     });
     return result;
+}
+
+export async function insertAutoRejectScript() {
+    const tab = await getCurrentTab();
+    if (tab === null) return null;
+    return await chrome.scripting.executeScript({
+        target: {tabId: tab.id, allFrames: true},
+        func: runBannerHandler
+    });
 }
