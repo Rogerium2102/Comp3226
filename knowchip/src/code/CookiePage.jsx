@@ -1,4 +1,3 @@
-import { getAll } from "./deletion/recyclingBin";
 import { getAllCookies } from "./Storage/CookieHandler";
 import { useState, useEffect } from 'react';
 import { purgeCookies } from "./deletion/cookieDeleter";
