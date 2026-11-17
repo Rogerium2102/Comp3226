@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>KnowChip · Cookie test lab</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="module" src="/app.js"></script>
+</head>
+
+<body>
+  <main>
+    <header>
+      <h1>
+        <span id="page-title">Cookie test lab</span>
+        <span class="dot">.</span>
+      </h1>
+      <p id="page-description">
+        Create known cookies, inspect what the browser sends,
+        then try your extension.
+      </p>
+      <div class="origins"><span id="site-label">Connecting…</span><code id="origin"></code></div>
+    </header>
+
+    <section id="consent-banner" aria-label="Cookie consent" hidden>
+      <div>
+        <h2>Optional cookies</h2>
+        <p>Allow the local analytics/preference fixtures and a cross-site test embedded web page? Essential cookies have a separate
+          control below.</p>
+      </div>
+      <div class="actions"><button id="reject">Reject optional cookies</button><button id="accept"
+          class="primary">Accept optional cookies</button></div>
+    </section>
+
+    <section id="publisher-controls" hidden>
+      <div class="section-heading"><span class="step">01</span>
+        <div>
+          <h2>First-party cookies</h2>
+        </div>
+      </div>
+      <div class="actions">
+        <button id="essential" class="primary">Create essential cookies: kc_session, kc_csrf, kc_cart</button>
+        <button id="dummy">Create dummy cookies: kc_theme, kc_analytics, kc_scoped</button>
+        <button id="lifetime">Create a 5-second cookie: kc_short</button>
+        <button id="show-consent">Show consent banner: kc_cart</button>
+      </div>
+      <div class="cart">
+        <div>
+          <h3>Dummy shopping cart</h3>
+          <p id="cart-state" role="status">Loading…</p>
+        </div><button id="add-item">Add one item</button>
+      </div>
+      <p class="hint">The cart needs kc_session and kc_cart. Delete either using the extension, then observe again to
+        see the feature stop working.</p>
+    </section>
+
+    <section id="third-party-controls" hidden>
+      <div class="section-heading"><span class="step">02</span>
+        <div>
+          <h2>Third-party context</h2>
+          <p>A 127.0.0.1 Embedded web page in localhost (publisher) website. This is a different site entirely on a different port.</p>
+        </div>
+      </div>
+      <div class="actions"><button id="third-party" class="primary">Emit third-party cookies</button><button
+          id="partitioned">Emit partitioned cookie only</button><a id="tracker-link" target="_blank" rel="noopener">Open
+          tracker top-level ↗</a></div>
+      <p class="hint">“Emit” tries an HTTP cookie, a JavaScript cookie, a CHIPS cookie, and an invalid negative control.
+        An accepted consent banner cannot override the browser’s third-party policy.</p>
+      <iframe id="tracker-frame" title="Local third-party cookie fixture" hidden></iframe>
+      <pre id="tracker-state">No iframe loaded yet.</pre>
+    </section>
+
+    <section id="tracker-controls" hidden>
+      <div class="section-heading"><span class="step">T</span>
+        <div>
+          <h2>Tracker, opened as a first party</h2>
+          <p>Seed SameSite=Lax and Strict controls here, then return to the publisher and observe its embedded web page. Neither
+            control should be sent inside that web page.</p>
+        </div>
+      </div>
+      <div class="actions"><button id="seed-controls" class="primary">Seed SameSite controls</button><a
+          id="publisher-link">Return to publisher ↗</a></div>
+      <p class="hint">Cookies set here have first-party context here; cookies from this same host have third-party
+        context inside the publisher’s embedded web page.</p>
+    </section>
+
+    <section>
+      <div class="section-heading"><span class="step">03</span>
+        <div>
+          <h2>Observe &amp; reset</h2>
+          <p>Read real request cookies without setting new ones. A missing cookie may have expired, been deleted, or
+            been blocked.</p>
+        </div>
+      </div>
+      <div class="actions"><button id="observe" class="primary">Observe cookies</button><button id="reset"
+          class="danger">Reset lab cookies</button><a href="/api/manifest" target="_blank" rel="noopener">Fixture
+          manifest ↗</a></div>
+      <div class="observations">
+        <div>
+          <h3>Cookies received by server</h3>
+          <pre id="server-state">{}</pre>
+        </div>
+        <div>
+          <h3>Visible to page JavaScript</h3>
+          <pre id="script-state">(none)</pre>
+          <p class="hint">HttpOnly and out-of-path cookies are excluded from document.cookie.</p>
+        </div>
+      </div>
+      <p class="hint">Reset clears this host and attempts an embedded web page refresh on the other site. To clear tracker cookies
+        blocked from embedded web page access, open its top-level page and reset there too. Reset does not recreate the essentials.
+      </p>
+    </section>
+
+    <section>
+      <h2>Fixture catalogue</h2>
+      <p>Some definitions of the cookies supported by this test suite.</p>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Host / purpose</th>
+              <th>Attributes</th>
+              <th>Lifetime / path</th>
+            </tr>
+          </thead>
+          <tbody id="catalogue"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="activity">
+      <h2>Activity</h2>
+      <p id="status" role="status" aria-live="polite">Starting…</p>
+      <ol id="activity-log"></ol>
+    </section>
+  </main>
+</body>
+
+</html>
