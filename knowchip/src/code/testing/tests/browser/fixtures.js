@@ -2,8 +2,6 @@ import { test as base, expect } from '@playwright/test';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 
-// Incognito Chromium blocks third-party cookies even when the CDP restriction
-// override is false. Use disposable regular profiles with explicit preferences.
 export const test = base.extend({
   context: async ({ playwright, headless }, use, testInfo) => {
     const profile = testInfo.outputPath('chromium-profile');
@@ -18,8 +16,6 @@ export const test = base.extend({
         headless, ignoreHTTPSErrors: true,
         executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH || undefined,
       });
-      // Playwright's runner automatically records configured traces/screenshots
-      // for contexts created during the test, including persistent contexts.
       await use(context);
     } finally {
       try {

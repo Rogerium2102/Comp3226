@@ -1,4 +1,3 @@
-// Purpose/essential are test ground truth, not attributes browsers put on cookies.
 export const cookies = Object.freeze([
   { name: 'kc_session', value: 'dummy-session-001', site: 'publisher', group: 'essential', purpose: 'Dummy session used by the cart', essential: true, secure: true, httpOnly: true, sameSite: 'Lax', path: '/' },
   { name: 'kc_csrf', value: 'dummy-csrf-001', site: 'publisher', group: 'essential', purpose: 'Example CSRF token metadata (no real authentication)', essential: true, secure: true, httpOnly: false, sameSite: 'Strict', path: '/', maxAge: 3600 },
@@ -48,7 +47,6 @@ export function parseFixtureCookies(header = '') {
   return values;
 }
 
-// Chrome API-shaped fake metadata for unit tests; no real browser cookies created.
 export function createCookieFixtures({ now = Date.now() / 1000 } = {}) {
   return cookies.filter(cookie => !cookie.expectRejected).map(cookie => ({
     name: cookie.name, value: cookie.value,

@@ -2,8 +2,6 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createCookieFixtures } from '../fixtures/chrome-cookies.js';
 
-// The source under upstream/ is an unchanged, read-only reference snapshot.
-// These are unit contract tests with Chrome mocks, not full extension UI tests.
 async function setup(t, input = createCookieFixtures()) {
   const saved = globalThis.chrome;
   const cache = {};

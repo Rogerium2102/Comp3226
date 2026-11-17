@@ -35,7 +35,9 @@ export function createLabServer() {
     const tracker = `https://127.0.0.1:${port}`;
     const host = request.headers.host;
     const site = host === `localhost:${port}` ? 'publisher' : host === `127.0.0.1:${port}` ? 'tracker' : null;
-    if (!site) return sendJSON(response, 421, { error: 'Use the printed localhost or 127.0.0.1 URL.' });
+    if (!site) {
+      return sendJSON(response, 421, { error: 'Use the printed localhost or 127.0.0.1 URL.' });
+    }
     const origin = site === 'publisher' ? publisher : tracker;
     const url = new URL(request.url, origin);
     const incoming = parseFixtureCookies(request.headers.cookie);

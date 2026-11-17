@@ -18,12 +18,12 @@ export function ensureCertificates() {
       '-addext', 'extendedKeyUsage=serverAuth',
     ], { stdio: 'pipe' });
   } catch (error) {
-    throw new Error('Could not generate the local certificate. Install OpenSSL, or supply .certs/localhost.pem and .certs/localhost-key.pem with SANs localhost and 127.0.0.1.', { cause: error });
+    throw new Error('Could not generate the local certificate. Make sure OpenSSL and node are configured correctly and recognisable.', { cause: error });
   }
   return { key, cert };
 }
 
 if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
   ensureCertificates();
-  console.log('Created/found local-only certificate in .certs/. It is not a trusted public certificate.');
+  console.log('Created/found local-only certificate in .certs/.');
 }

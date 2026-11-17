@@ -26,7 +26,7 @@
     <section id="consent-banner" aria-label="Cookie consent" hidden>
       <div>
         <h2>Optional cookies</h2>
-        <p>Allow the local analytics/preference fixtures and a cross-site test iframe? Essential cookies have a separate
+        <p>Allow the local analytics/preference fixtures and a cross-site test embedded web page? Essential cookies have a separate
           control below.</p>
       </div>
       <div class="actions"><button id="reject">Reject optional cookies</button><button id="accept"
@@ -37,14 +37,13 @@
       <div class="section-heading"><span class="step">01</span>
         <div>
           <h2>First-party cookies</h2>
-          <p>Set on localhost, while localhost is the top-level site.</p>
         </div>
       </div>
       <div class="actions">
-        <button id="essential" class="primary">Create essential cookies</button>
-        <button id="dummy">Create dummy cookies</button>
-        <button id="lifetime">Create 5-second cookie</button>
-        <button id="show-consent">Show consent banner</button>
+        <button id="essential" class="primary">Create essential cookies: kc_session, kc_csrf, kc_cart</button>
+        <button id="dummy">Create dummy cookies: kc_theme, kc_analytics, kc_scoped</button>
+        <button id="lifetime">Create a 5-second cookie: kc_short</button>
+        <button id="show-consent">Show consent banner: kc_cart</button>
       </div>
       <div class="cart">
         <div>
@@ -53,14 +52,14 @@
         </div><button id="add-item">Add one item</button>
       </div>
       <p class="hint">The cart needs kc_session and kc_cart. Delete either using the extension, then observe again to
-        see the feature stop working. Observation never recreates cookies.</p>
+        see the feature stop working.</p>
     </section>
 
     <section id="third-party-controls" hidden>
       <div class="section-heading"><span class="step">02</span>
         <div>
           <h2>Third-party context</h2>
-          <p>A 127.0.0.1 iframe embedded in localhost. These are different sites, not just different ports.</p>
+          <p>A 127.0.0.1 Embedded web page in localhost (publisher) website. This is a different site entirely on a different port.</p>
         </div>
       </div>
       <div class="actions"><button id="third-party" class="primary">Emit third-party cookies</button><button
@@ -76,14 +75,14 @@
       <div class="section-heading"><span class="step">T</span>
         <div>
           <h2>Tracker, opened as a first party</h2>
-          <p>Seed SameSite=Lax and Strict controls here, then return to the publisher and observe its iframe. Neither
-            control should be sent inside that cross-site iframe.</p>
+          <p>Seed SameSite=Lax and Strict controls here, then return to the publisher and observe its embedded web page. Neither
+            control should be sent inside that web page.</p>
         </div>
       </div>
       <div class="actions"><button id="seed-controls" class="primary">Seed SameSite controls</button><a
           id="publisher-link">Return to publisher ↗</a></div>
       <p class="hint">Cookies set here have first-party context here; cookies from this same host have third-party
-        context inside the publisher’s iframe.</p>
+        context inside the publisher’s embedded web page.</p>
     </section>
 
     <section>
@@ -108,15 +107,14 @@
           <p class="hint">HttpOnly and out-of-path cookies are excluded from document.cookie.</p>
         </div>
       </div>
-      <p class="hint">Reset clears this host and attempts an iframe reset on the other site. To clear tracker cookies
-        blocked from iframe access, open its top-level page and reset there too. Reset does not recreate the essentials.
+      <p class="hint">Reset clears this host and attempts an embedded web page refresh on the other site. To clear tracker cookies
+        blocked from embedded web page access, open its top-level page and reset there too. Reset does not recreate the essentials.
       </p>
     </section>
 
     <section>
       <h2>Fixture catalogue</h2>
-      <p>Expected definitions, not a live browser cookie inventory. Inspect stored flags and partition keys in DevTools
-        or the extension.</p>
+      <p>Some definitions of the cookies supported by this test suite.</p>
       <div class="table-wrap">
         <table>
           <thead>
