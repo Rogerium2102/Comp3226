@@ -1,5 +1,5 @@
 
-async function getAllCookiesInternal() {
+export async function getAllCookiesInternal() {
     try {
         const cookies = await chrome.cookies.getAll({});
         return cookies || [];
