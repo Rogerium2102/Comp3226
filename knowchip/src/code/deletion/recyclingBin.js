@@ -1,6 +1,6 @@
 //The recycling bin stores deleted cookies and ensures they don't reappear
 
-import { purgeCookie, wipeCookie } from "./cookieDeleter";
+import { purgeCookie, wipeCookie } from "./cookieDeleter.js";
 
 //Exported functions
 
@@ -277,9 +277,12 @@ async function loadBins() {
     try {
         if (deleteBin === null || wipeBin === null || trackerBin === null) {
             const result = await chrome.storage.local.get(["deleteBin", "wipeBin", "trackerBin"]);
-            deleteBin = result.deleteBin || []; //Grabs local storage data or inits empty array otherwise
-            wipeBin = result.wipeBin || [];
-            trackerBin = result.trackerBin || [];
+            //Check again to avoid overwriting loaded bins
+            if (deleteBin === null || wipeBin === null || trackerBin === null) {
+                deleteBin = result.deleteBin || []; //Grabs local storage data or inits empty array otherwise
+                wipeBin = result.wipeBin || [];
+                trackerBin = result.trackerBin || [];
+            }
             return true;
         }
     } catch (err) {

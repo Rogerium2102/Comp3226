@@ -6,26 +6,7 @@ import {store, getURL, cleanCookie} from './recyclingBin.js';
  * @returns {Promise<Bool>} - Success flag
  */
 export async function purgeCookies(cookies) {
-    try {
-        //Runs all deletions in parallel & pauses until they are completed
-        const results = await Promise.allSettled(cookies.map(cookie => purgeCookie(cookie))); //List[{name, url, storeId}]
-        let allSuccess = true; //Bool //Whether all deletions successfully went through
-
-        results.forEach((element, idx) => {
-            if (element.status === "rejected") { //Error in purgeCookie
-                console.error(`Failed to delete cookie ${cookies[idx].name}`);
-                allSuccess = false;
-            } else if (element.value === null) { //Null return of purgeCookie
-                console.warn(`Cookie ${cookies[idx].name} was not found`);
-                allSuccess = false;
-            }
-        });
-        return allSuccess;
-
-    } catch (err) {
-        console.error(`Failed to delete cookies`, err);
-        return false;
-    }
+    return batchHandle(cookies, false);
 }
 
 /**
@@ -34,24 +15,30 @@ export async function purgeCookies(cookies) {
  * @returns {Promise<Bool>} - Success flag
  */
 export async function wipeCookies(cookies) {
+    return batchHandle(cookies, true);
+}
+
+/**
+ * Applies wiping or purging operation on a list of cookies
+ * @param {chrome.cookies.Cookie[]} cookies
+ * @param {Bool} isWiping - Operation being applied
+ * @returns {Promise<Bool>} - Success flag
+ */
+async function batchHandle(cookies, isWiping) {
+    const opMsg = isWiping ? "wiping" : "deleting";
+    const opFunc = isWiping ? wipeCookie : purgeCookie;
     try {
         //Runs all wipes in parallel & pauses until they are completed
-        const results = await Promise.allSettled(cookies.map(cookie => wipeCookie(cookie))); //List[Dict]
-        let allSuccess = true; //Bool //Whether all deletions successfully went through
+        const results = await Promise.allSettled(cookies.map(cookie => opFunc(cookie))); //Dict
+        const totalNum = results.length; //int //Stores all results (avoids duplicating array twice)
+        const failNum = results.filter(r => r.status === "rejected" || r.value === false).length; //int //Number of failed deletions
 
-        results.forEach((element, idx) => {
-            if (element.status === "rejected") { //Error in wipeCookie
-                console.error(`Failed to wipe cookie ${cookies[idx].name}`);
-                allSuccess = false;
-            } else if (element.value === null) { //Null return of wipeCookie
-                console.warn(`Cookie ${cookies[idx].name} was not found`);
-                allSuccess = false;
-            }
-        });
-        return allSuccess;
+        const msg = `Cookie ${opMsg} completed on ${totalNum} entries with ${totalNum-failNum} successes and ${failNum} failures.`;
+        failNum === 0 ? console.log(msg) : console.warn(msg);
 
+        return failNum === 0;
     } catch (err) {
-        console.error(`Failed to wipe cookies`, err);
+        console.error(`${opMsg} cookies failed: `, err);
         return false;
     }
 }
@@ -79,13 +66,13 @@ export async function purgeCookie(cookie) {
         if (result) {
             console.log(`Successfully deleted cookie: ${result.name}`);
             await store(cookie, false); //Stores deleted cookie in recycling bin
+            return true;
         } else {
             console.warn(`Failed to delete cookie ${cookie.name}`);
+            return false;
         }
-
-        return true;
     } catch (err) {
-        console.error(`Failed to delete cookie ${cookie.name}:`, err);
+        console.error(`Failed to delete cookie ${cookie?.name}:`, err);
         return false;
     }
 }
@@ -108,13 +95,13 @@ export async function wipeCookie(cookie) {
         if (result) {
             console.log(`Successfully neutralized cookie: ${result.name}`);
             await store(cookie, true); //Stores wiped cookie in recycling bin
+            return true;
         } else {
             console.warn(`Failed to wipe cookie ${cookieDetails.name}`);
+            return false;
         }
-
-        return true;
     } catch (err) {
-        console.error(`Failed to wipe cookie ${cookieDetails.name}:`, err);
+        console.error(`Failed to wipe cookie ${cookie?.name}:`, err);
         return false;
     }
 }
