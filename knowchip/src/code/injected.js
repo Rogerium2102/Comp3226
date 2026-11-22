@@ -1,3 +1,5 @@
+import { scanTracker } from "./deletion/storageDeleter";
+
 /**
  * Wrapper function for easy injection into a page. When page is loaded this script will immediately run.
  */
@@ -33,8 +35,11 @@
      * @param {string} action
      * @param {string} key
      * @param value
+     * @returns {Bool} - Whether the data isn't a tracker
      */
-    function fireSuspiciousStorageEvent(type, action, key, value) {
+    async function fireSuspiciousStorageEvent(type, action, key, value) {
+        if (await scanTracker(key)) return false; //Prevents tracker from spawning if found in blacklist/bin
+
         if (isPairProbablyTrackingCookie(key, value)) {
             console.warn(`[] ${type}.${action} detected a potential tracking cookie`);
 
@@ -43,14 +48,18 @@
                     detail: {type, action, key, value, timestamp: Date.now()}
                 })
             )
+            return false;
         }
+
+        return true;
     }
 
     const originalSetItem = Storage.prototype.setItem;
-    Storage.prototype.setItem = function (key, value) {
+    Storage.prototype.setItem = async function (key, value) {
         const storageType = this === window.localStorage ? 'localStorage' : 'sessionStorage';
-        fireSuspiciousStorageEvent(storageType, 'setItem', key, value);
-        return originalSetItem.apply(this, arguments);
+        if (await fireSuspiciousStorageEvent(storageType, 'setItem', key, value)) {
+            return originalSetItem.apply(this, arguments);
+        }
     }
 
     /**
@@ -61,15 +70,15 @@
      */
     function createStorageProxy(target, type) {
         return new Proxy(target, {
-            set(obj, prop, value) {
-                fireSuspiciousStorageEvent(type, 'propertyWrite', prop, value);
+            async set(obj, prop, value) {
+                await fireSuspiciousStorageEvent(type, 'propertyWrite', prop, value);
                 obj[prop] = value;
                 return true;
             },
-            get(obj, prop) {
+            async get(obj, prop) {
                 const value = obj[prop];
                 if (typeof value !== 'function' && typeof prop === 'string') {
-                    fireSuspiciousStorageEvent(type, 'propertyRead', prop, value);
+                    await fireSuspiciousStorageEvent(type, 'propertyRead', prop, value);
                 }
                 return typeof value === 'function' ? value.bind(obj) : value;
             }
@@ -96,12 +105,12 @@
      * @param storage
      * @param type
      */
-    function storageScan(storage, type) {
+    async function storageScan(storage, type) {
         try {
             for (let i = 0; i < storage.length; i++) {
                 const key = storage.key(i);
                 const value = storage.getItem(key);
-                fireSuspiciousStorageEvent(type, 'existingScan', key, value);
+                await fireSuspiciousStorageEvent(type, 'existingScan', key, value);
             }
         } catch (error) {
             console.error(`[]: An error occurred during an storage scan

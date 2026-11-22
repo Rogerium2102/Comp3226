@@ -24,10 +24,11 @@ export default defineConfig({
       input: {
           main: './index.html',
           background: resolve(__dirname, 'src/code/background/background.js'),
+          injected: resolve(__dirname, 'src/code/injected.js'),
       },
         output: {
           entryFileNames: (chunkInfo) => {
-              return chunkInfo.name == 'background'
+              return ['background', 'injected'].includes(chunkInfo.name)
               ? '[name].js'
                   :'assets/[name]-[hash].js';
           },
