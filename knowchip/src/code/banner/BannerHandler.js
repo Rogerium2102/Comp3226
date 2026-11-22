@@ -74,22 +74,35 @@ export function runBannerHandler() {
         }
         return false;
     }
+
+    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
     async function handle() {
+        let attempts = 0;
+        const maxAttempts = 3;
         console.log("Handle ran!")
         try {
-            const allClickable = querySelectorAllDeep(
-                'button, [role="button"], input[type="button"], input[type="submit"], a'
-            ).filter(el => el.checkVisibility());
-            console.log(`Clickable: `, allClickable);
-            const allInEnvironment = allClickable.filter(el => isInsideConsentContext(el));
-            console.log(`InEnvironment: `, allInEnvironment);
-            if (!allClickable.length) return false;
+            while (attempts < maxAttempts) {
+                const allClickable = querySelectorAllDeep(
+                    'button, [role="button"], input[type="button"], input[type="submit"], a'
+                ).filter(el => el.checkVisibility());
+                console.log(`Clickable: `, allClickable);
+                const allInEnvironment = allClickable.filter(el => isInsideConsentContext(el));
+                console.log(`InEnvironment: `, allInEnvironment);
+                if (!allClickable.length) {
+                    break;
+                }
 
-            const {button, score} = determineButtonToClick(allClickable);
-            if (!button || score <= 0) return false;
+                const {button, score} = determineButtonToClick(allClickable);
+                if (!button || score <= 0) {
+                    break;
+                }
 
-            console.log("Selected button!",button.textContent, "with score: ", score);
-            button.click();
+                console.log("Selected button!", button.textContent, "with score: ", score);
+                button.click();
+                await delay(500);
+                attempts++;
+            }
             return true;
         } catch (e) {
             console.error(e);

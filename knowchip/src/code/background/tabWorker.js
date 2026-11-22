@@ -51,10 +51,33 @@ export async function runSelectorOnTab(selector) {
 }
 
 export async function insertAutoRejectScript() {
+    return await insertScriptInCurrentTab(true, runBannerHandler);
+}
+
+/**
+ * Execute the given script in the current tab.
+ * @param {boolean} executeInChildFrames
+ * @param {void => void} script
+ * @return {Promise<void>}
+ */
+export async function insertScriptInCurrentTab(executeInChildFrames, script) {
     const tab = await getCurrentTab();
-    if (tab === null) return null;
+    return await insertScriptInATab(tab.id, executeInChildFrames, script);
+}
+
+/**
+ * Executes the specified script in a tab
+ * @param {number} tabId
+ * @param {boolean} executeInChildFrames
+ * @param {void => void} script
+ * @return {Promise<void>}
+ */
+export async function insertScriptInATab(tabId, executeInChildFrames, script) {
+    if (tabId === null || tabId <0) {
+        return null;
+    }
     return await chrome.scripting.executeScript({
-        target: {tabId: tab.id, allFrames: true},
-        func: runBannerHandler
+        target: {tabId: tabId, allFrames: executeInChildFrames},
+        func: script,
     });
 }
