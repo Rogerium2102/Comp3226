@@ -1,4 +1,4 @@
-import {insertAutoRejectScript} from "./tabWorker.js"
+import {insertAutoRejectScript, insertFileInCurrentTab} from "./tabWorker.js"
 
 console.log("Cookie rejected\nEverything's fine. Don't worry.");
 
@@ -17,7 +17,13 @@ chrome.cookies.onChanged.addListener(async (info) => {
 });
 */
 
-const bannerDetectTimer = setInterval(() => {
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+/**
+ * RUNS CODE WHEN THE PAGE UPDATES
+ */
+chrome.tabs.onUpdated.addListener( async (id, changeInfo, tab) => {
+    insertFileInCurrentTab(false, ["injected.js"]);
+    await delay(3000); //Wait 3 seconds to ensure the page has updated
     insertAutoRejectScript().then(result => {
         if (result === null) {
             console.log("Result was null!");
@@ -27,4 +33,4 @@ const bannerDetectTimer = setInterval(() => {
             console.log("AutoReject ended in state: ", output);
         }
     });
-}, 10000);
+})

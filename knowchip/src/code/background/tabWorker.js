@@ -81,3 +81,31 @@ export async function insertScriptInATab(tabId, executeInChildFrames, script) {
         func: script,
     });
 }
+
+/**
+ * insert a file into the current tab
+ * @param {boolean} executeInChildFrames
+ * @param {list<string>} files
+ * @return {Promise<void>}
+ */
+export async function insertFileInCurrentTab(executeInChildFrames, files) {
+    const tab = await getCurrentTab();
+    return await insertScriptInATab(tab.id, executeInChildFrames, files);
+}
+
+/**
+ * Insert a file into the given tab.
+ * @param {number} tabId
+ * @param {boolean} executeInChildFrames
+ * @param {list<string>} files
+ * @return {Promise<Array<chrome.scripting.InjectionResult<Awaited<unknown>>>|null>}
+ */
+export async function insertFileInATab(tabId, executeInChildFrames, files) {
+    if (tabId === null || tabId <0) {
+        return null;
+    }
+    return await chrome.scripting.executeScript({
+        tabId: {tabId: tabId, allFrames: executeInChildFrames},
+        files: files
+    });
+}
