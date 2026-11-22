@@ -1,5 +1,4 @@
-import {attemptAutoReject, getBanner} from "../banner/BannerHandler.js";
-import {getCurrentPage, runSelectorOnTab} from "./tabWorker.js"
+import {insertAutoRejectScript, insertFileInCurrentTab} from "./tabWorker.js"
 
 console.log("Cookie rejected\nEverything's fine. Don't worry.");
 
@@ -18,16 +17,20 @@ chrome.cookies.onChanged.addListener(async (info) => {
 });
 */
 
-const bannerDetectTimer = setInterval(() => {
-    const banner = getBanner();
-    const bannerRemovalMaxAttempts = 3;
-    if (banner) {
-        console.log("Cookie banner detected...");
-        if (attemptAutoReject(banner, bannerRemovalMaxAttempts)) {
-            console.log("Cookie banner removed successfully!");
+const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+/**
+ * RUNS CODE WHEN THE PAGE UPDATES
+ */
+chrome.tabs.onUpdated.addListener( async (id, changeInfo, tab) => {
+    insertFileInCurrentTab(false, ["injected.js"]);
+    await delay(3000); //Wait 3 seconds to ensure the page has updated
+    insertAutoRejectScript().then(result => {
+        if (result === null) {
+            console.log("Result was null!");
+        } else {
+            const success = result.some((frame) => Boolean(frame?.result));
+            const output = success ? "Rejected" : "Failed";
+            console.log("AutoReject ended in state: ", output);
         }
-        else {
-            console.warn("Failed to remove cookie banner");
-        }
-    }
-}, 10000);
+    });
+})

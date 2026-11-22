@@ -1,14 +1,14 @@
 import { getAllCookies , getAllCookiesInternal} from "./Storage/CookieHandler";
 import { useState, useEffect } from 'react';
 import { purgeCookies } from "./deletion/cookieDeleter";
-import { clearCookieCache } from "./Storage/CookieHandler";
+import { invalidateCache } from "./Storage/CookieHandler";
 // import { purgeCookie, wipeCookie } from "./deletion/cookieDeleter"
 
 export function CookiePage({ onBack }){
     const [cookies,setCookies] = useState([]);
     async function loadCookies(){
       console.log("reloading cookies")
-      clearCookieCache()
+      await invalidateCache()
       const data = await getAllCookiesInternal()
       setCookies(data || [])
     }
