@@ -1,28 +1,15 @@
-import {insertAutoRejectScript, insertFileInCurrentTab} from "./tabWorker.js"
-import { store, checkBin, checkBlacklist } from "../deletion/recyclingBin.js";
+import {insertAutoRejectScript, insertFileInCurrentTab, insertCommsScript} from "./tabWorker.js"
+import { store, checkBin, checkBlacklist, enterBlacklist } from "../deletion/recyclingBin.js";
 
 console.log("Cookie rejected\nEverything's fine. Don't worry.");
-
-/*
-//Listens whenever cookies are added, edited or deleted.
-chrome.cookies.onChanged.addListener(async (info) => {
-    const {cookie, cause, deleted} = info; //Unpacks info
-    if (deleted) {
-        console.log(`Cookie deleted: ${cookie.name}, Cause: ${cause}`);
-    } else {
-        //Checks if cookie is a restored cookie from the bin and deletes it if so
-        await checkBin(cookie).then((exists) => {
-            if (exists) deleteCookie(cookie);
-        });
-    }
-});
-*/
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 /**
  * RUNS CODE WHEN THE PAGE UPDATES
  */
 chrome.tabs.onUpdated.addListener( async (id, changeInfo, tab) => {
+    await insertCommsScript(); //Inserts intermediatory script for communication between MAIN (injected.js) and extension (background.js)
+    
     insertFileInCurrentTab(false, ["injected.js"]);
     await delay(3000); //Wait 3 seconds to ensure the page has updated
     insertAutoRejectScript().then(result => {
@@ -63,7 +50,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 sendResponse({status: 0}); //No match found
             })();
             return true;
-
+        
+        case "BLACKLIST_TRACKER_TO_EXTENSION":
+            enterBlacklist(message.key, false);
+            break;
         default:
             break;
     }

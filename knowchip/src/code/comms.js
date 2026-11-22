@@ -1,3 +1,5 @@
+/* THIS IS NOW DEPRECIATED */
+
 /* Designed to be injected into the script's ISOLATED world to communicate between injected.js and browser storage */
 
 //Fired by purgeTracker from storageDeleter.js, passes deleted tracker key to extension world

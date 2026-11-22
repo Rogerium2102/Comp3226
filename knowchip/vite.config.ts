@@ -25,11 +25,10 @@ export default defineConfig({
           main: './index.html',
           background: resolve(__dirname, 'src/code/background/background.js'),
           injected: resolve(__dirname, 'src/code/injected.js'),
-          comms: resolve(__dirname, 'src/code/comms.js'),
       },
         output: {
           entryFileNames: (chunkInfo) => {
-              return ['background', 'injected', 'comms'].includes(chunkInfo.name)
+              return ['background', 'injected'].includes(chunkInfo.name)
               ? '[name].js'
                   :'assets/[name]-[hash].js';
           },

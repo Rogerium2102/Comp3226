@@ -3,10 +3,10 @@
  * @param {Object} storageObj - Imported local storage from site
  * @param {string} key - Tracker name to delete
  * @param {Bool} equals - Whether to match the key exactly or partially
- * @param {Bool} blacklist - Whether to store deleted tracker in bin
+ * @param {Bool} bin - Whether to store deleted tracker in bin
  * @returns {Bool} - If any deletions occurred
  */
-export function purgeTracker(storageObj, key, equals = false, blacklist = true) {
+export function purgeTracker(storageObj, key, equals = false, bin = true) {
     try {
         //Validate storage object
         if (!storageObj || typeof storageObj.removeItem !== 'function') {
@@ -36,7 +36,7 @@ export function purgeTracker(storageObj, key, equals = false, blacklist = true) 
             storageObj.removeItem(k); //RemoveItem is synchronous so no need to await it
         }
         //Fires event to add tracker to bin
-        if (blacklist) {
+        if (bin) {
             //PurgeTracker runs in MAIN world, whereas store needs to run in extension world to access extension storage
             //This passes it to comms.js which is in ISOLATED world
             window.dispatchEvent(
@@ -55,11 +55,11 @@ export function purgeTracker(storageObj, key, equals = false, blacklist = true) 
 
 /**
  * //Scans a specific tracker to see if its present in recycling bin (HAS TO RUN IN MAIN WORLD)
- * @param {Object} storageObj - Imported local storage from site
  * @param {string} key - Tracker name to delete
+ * @param {Object} storageObj - Imported local storage from site
  * @returns {Promise<Bool>}
  */
-export async function scanTracker(storageObj, key) {
+export async function scanTracker(key, storageObj = null) {
     try {
         const status = await new Promise((callback) => {
             //Receives status of checked tracker name
@@ -79,17 +79,20 @@ export async function scanTracker(storageObj, key) {
             );
         });
 
-        switch (status) {
-            case 0: //No match
-                return false;
-            case 1: //Match in recycling bin
-                return purgeTracker(storageObj, key, true, false);
-            case 2: //Match in blacklist
-                return purgeTracker(storageObj, key, true, true); //Places tracker in bin
-            default:
-                console.error(`Incorrect status (${status}) return from ${key}`);
-                return false;
-        }
+        if (storageObj) {
+            switch (status) {
+                case 0: //No match
+                    return false;
+                case 1: //Match in recycling bin
+                    return purgeTracker(storageObj, key, true, false);
+                case 2: //Match in blacklist
+                    return purgeTracker(storageObj, key, true, true); //Places tracker in bin
+                default:
+                    console.error(`Incorrect status (${status}) return from ${key}`);
+                    return false;
+            }
+        } else return status !== 0;
+        
     } catch (err) {
         console.error(`Failed to scan tracker ${key}:`, err);
         return false;
