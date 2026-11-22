@@ -7,10 +7,10 @@ import { purgeCookie, wipeCookie } from "./cookieDeleter.js";
 /**
  * Stores a cookie/tracker that has been deleted
  * @param {chrome.cookies.Cookie | String} entry
- * @param {Bool} wiped - Whether the cookie was wiped rather than deleted
+ * @param {Bool} wiped - Not applicable to tracker entries, whether the cookie was wiped rather than deleted
  * @returns {Promise<int>} - Index of the stored cookie, with a failure value of -1
  */
-export async function store(entry, wiped) {
+export async function store(entry, wiped = false) {
     let isCookie; //Bool
     let name; //String //Error output
     try {
@@ -224,11 +224,79 @@ export function cleanCookie(cookie) {
     }
 }
 
+/**
+ * Adds a tracker string to the blacklist
+ * @param {string} key
+ * @param {Bool} exact - Whether this string is a complete or partial name
+ * @param {Bool} enforce - Whether the blacklist should be adapted for this string or this string be adapted to the blacklist
+ * @returns {Promise<[Bool, Bool]>} - Success, Field needs update
+ */
+export async function enterBlacklist(key, exact, enforce = false){
+    if (blacklist === null) await loadBins();
+    try {
+        let placed = false; //Whether the input value has been accounted for in the blacklist
+        let updated = false; //Whether storage needs update
+        for (const entry of blacklist) {
+            if (entry[0] === key) { //Exact matching key found
+                placed = updated = true;
+                if (enforce)entry[1] = exact; //Forces blacklist to change exact value
+                else        entry[1] = entry[1] && exact; //Prioritises False values
+
+            } else if (key.includes(entry[0])) { //Input key contains blacklist key within it
+                if (entry[1]) continue; //Smaller key requires to be exactly that would not overlap with larger key
+                else placed = true; //Smaller key is already covers all cases in which new one does
+
+            } else if (entry[0].includes(key)) { //Blacklist key contains input key within it
+                if (exact) continue; //Smaller key requires to be exactly that would not overlap with larger key
+                else { //Smaller key that accepts being a subset will always override larger key
+                    placed = updated = true;
+                    entry[0] = key;
+                    entry[1] = exact;
+                }
+            }
+        }
+
+        if (!placed) { //Adds new entry
+            blacklist.push([key, exact]);
+            placed = updated = true;
+        }
+
+        blacklist = [...new Map(blacklist)]; //Cleans duplicates
+
+        if (updated) await chrome.storage.local.set({ ["blacklist"] : blacklist }); //Backups the blacklist in local storage
+
+        return [true, updated];
+    } catch (err) {
+        console.error(`Error appending tracker ${key} into blacklist: ${err}`);
+        return [false, false];
+    }
+}
+
+/**
+ * Compares an input tracker against the blacklist
+ * @param {string} key
+ * @returns {Promise<Bool>} - Match in blacklist
+ */
+export async function checkBlacklist(key){
+    if (blacklist === null) await loadBins();
+    try {
+        for (const [banKey, exact] of blacklist) {
+            if (exact && key === banKey) return true;
+            else if (!exact && key.includes(banKey)) return true;
+        }
+        return false;
+    } catch (err) {
+        console.error(`Error comparing tracker ${key} with blacklist: ${err}`);
+        return false;
+    }
+}
+
 //Local functions
 
 let deleteBin = null //List[Cookie] //Recycling bin for deleted cookies
 let wipeBin = null //List[Cookie] //Recycling bin for wiped cookies
 let trackerBin = null //List[String] //Recycling bin for deleted tracker keys (there's no point in wiping trackers)
+let blacklist = null //List[[String, Bool]] //Holds [tracker key, exact match]
 
 /**
  * Checks if a cookie matches another cookie
@@ -275,13 +343,14 @@ function normalisePartitionKey(partitionKey) {
  */
 async function loadBins() {
     try {
-        if (deleteBin === null || wipeBin === null || trackerBin === null) {
-            const result = await chrome.storage.local.get(["deleteBin", "wipeBin", "trackerBin"]);
+        if (deleteBin === null || wipeBin === null || trackerBin === null || blacklist === null) {
+            const result = await chrome.storage.local.get(["deleteBin", "wipeBin", "trackerBin", "blacklist"]);
             //Check again to avoid overwriting loaded bins
-            if (deleteBin === null || wipeBin === null || trackerBin === null) {
+            if (deleteBin === null || wipeBin === null || trackerBin === null || blacklist === null) {
                 deleteBin = result.deleteBin || []; //Grabs local storage data or inits empty array otherwise
                 wipeBin = result.wipeBin || [];
                 trackerBin = result.trackerBin || [];
+                blacklist = result.blacklist || [];
             }
             return true;
         }
@@ -290,6 +359,7 @@ async function loadBins() {
         deleteBin = deleteBin || []; //Inits empty array if local storage fails
         wipeBin = wipeBin || [];
         trackerBin = trackerBin || [];
+        blacklist = blacklist || [];
         return false;
     }
 }

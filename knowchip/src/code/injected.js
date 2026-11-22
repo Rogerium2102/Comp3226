@@ -1,3 +1,5 @@
+import { scanTracker } from "./deletion/storageDeleter";
+
 /**
  * Wrapper function for easy injection into a page. When page is loaded this script will immediately run.
  */
