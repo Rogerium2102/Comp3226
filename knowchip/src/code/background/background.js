@@ -10,7 +10,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
 chrome.tabs.onUpdated.addListener( async (id, changeInfo, tab) => {
     await insertCommsScript(); //Inserts intermediatory script for communication between MAIN (injected.js) and extension (background.js)
     
-    insertFileInCurrentTab(false, ["injected.js"]);
+    insertFileInCurrentTab(false, ["injected.js"], "MAIN");
     await delay(3000); //Wait 3 seconds to ensure the page has updated
     insertAutoRejectScript().then(result => {
         if (result === null) {
