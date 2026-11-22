@@ -91,7 +91,12 @@ export async function scanTracker(key, storageObj = null) {
                     console.error(`Incorrect status (${status}) return from ${key}`);
                     return false;
             }
-        } else return status !== 0;
+        } else {
+            if (status < 0) {
+                console.error(`Incorrect status (${status}) return from ${key}`);
+                return false;
+            } else return status !== 0;
+        }
         
     } catch (err) {
         console.error(`Failed to scan tracker ${key}:`, err);

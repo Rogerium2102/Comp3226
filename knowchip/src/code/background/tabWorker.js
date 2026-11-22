@@ -110,7 +110,7 @@ export async function insertFileInATab(tabId, executeInChildFrames, files, world
         return null;
     }
     return await chrome.scripting.executeScript({
-        tabId: {tabId: tabId, allFrames: executeInChildFrames},
+        target: {tabId: tabId, allFrames: executeInChildFrames},
         files: files,
         world: world
     });
@@ -120,10 +120,9 @@ export async function insertFileInATab(tabId, executeInChildFrames, files, world
  * Designed to be injected into the script's ISOLATED world to communicate between injected.js and browser storage
  */
 export async function insertCommsScript() {
-    if (window.commsLoaded) return; //Prevents duplicate listeners
-    window.commsLoaded = true;
-
     return await insertScriptInCurrentTab(false, function(){ //Injects script into ISOLATED World
+        if (window.commsLoaded) return; //Prevents duplicate listeners
+        window.commsLoaded = true;
 
         //Fired by purgeTracker from storageDeleter.js, passes deleted tracker key to extension world
         //Passes it to background.js

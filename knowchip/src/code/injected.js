@@ -70,15 +70,15 @@ import { scanTracker } from "./deletion/storageDeleter";
      */
     function createStorageProxy(target, type) {
         return new Proxy(target, {
-            async set(obj, prop, value) {
-                await fireSuspiciousStorageEvent(type, 'propertyWrite', prop, value);
+            set(obj, prop, value) {
+                fireSuspiciousStorageEvent(type, 'propertyWrite', prop, value);
                 obj[prop] = value;
                 return true;
             },
-            async get(obj, prop) {
+            get(obj, prop) {
                 const value = obj[prop];
                 if (typeof value !== 'function' && typeof prop === 'string') {
-                    await fireSuspiciousStorageEvent(type, 'propertyRead', prop, value);
+                    fireSuspiciousStorageEvent(type, 'propertyRead', prop, value);
                 }
                 return typeof value === 'function' ? value.bind(obj) : value;
             }
