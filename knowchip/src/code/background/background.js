@@ -22,7 +22,7 @@ const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
  * RUNS CODE WHEN THE PAGE UPDATES
  */
 chrome.tabs.onUpdated.addListener( async (id, changeInfo, tab) => {
-    insertFileInCurrentTab(false, ["injected.js"]);
+    insertFileInCurrentTab(false, ["injected.js"], "MAIN");
     await delay(3000); //Wait 3 seconds to ensure the page has updated
     insertAutoRejectScript().then(result => {
         if (result === null) {
