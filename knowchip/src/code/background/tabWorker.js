@@ -2,9 +2,9 @@ import {runBannerHandler} from "../banner/BannerHandler.js";
 
 export async function getCurrentPage() {
     const tab = await getCurrentTab();
-    if (tab === null) return null;
+    if (!tab) return null;
     const results = await chrome.scripting.executeScript({
-        target: tab.id,
+        target: {tabId: tab.id},
         func: () => {
             return {
                 title: document.title,
@@ -30,9 +30,9 @@ async function getCurrentTab() {
 
 export async function runSelectorOnTab(selector) {
     const tab = await getCurrentTab();
-    if (tab === null) return null;
+    if (!tab) return null;
     const [{result}] = await chrome.scripting.executeScript({
-        target: tab.id,
+        target: {tabId: tab.id},
         args: [selector],
         func: (sel) => {
             const el = document.querySelectorAll(sel);
@@ -63,7 +63,7 @@ export async function insertAutoRejectScript() {
  */
 export async function insertScriptInCurrentTab(executeInChildFrames, script, world = "ISOLATED") {
     const tab = await getCurrentTab();
-    return await insertScriptInATab(tab.id, executeInChildFrames, script);
+    return await insertScriptInATab(tab?.id, executeInChildFrames, script);
 }
 
 /**
@@ -75,7 +75,7 @@ export async function insertScriptInCurrentTab(executeInChildFrames, script, wor
  * @return {Promise<void>}
  */
 export async function insertScriptInATab(tabId, executeInChildFrames, script, world = "ISOLATED") {
-    if (tabId === null || tabId <0) {
+    if (!tabId || tabId <0) {
         return null;
     }
     return await chrome.scripting.executeScript({
@@ -94,7 +94,7 @@ export async function insertScriptInATab(tabId, executeInChildFrames, script, wo
  */
 export async function insertFileInCurrentTab(executeInChildFrames, files,world = "ISOLATED") {
     const tab = await getCurrentTab();
-    return await insertFileInATab(tab.id, executeInChildFrames, files, world);
+    return await insertFileInATab(tab?.id, executeInChildFrames, files, world);
 }
 
 /**
@@ -106,7 +106,7 @@ export async function insertFileInCurrentTab(executeInChildFrames, files,world =
  * @return {Promise<Array<chrome.scripting.InjectionResult<Awaited<unknown>>>|null>}
  */
 export async function insertFileInATab(tabId, executeInChildFrames, files, world = "ISOLATED") {
-    if (tabId === null || tabId <0) {
+    if (!tabId || tabId <0) {
         return null;
     }
     return await chrome.scripting.executeScript({
