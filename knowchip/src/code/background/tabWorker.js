@@ -1,5 +1,8 @@
+import {runBannerHandler} from "../banner/BannerHandler.js";
+
 export async function getCurrentPage() {
     const tab = await getCurrentTab();
+    if (tab === null) return null;
     const results = await chrome.scripting.executeScript({
         target: tab.id,
         func: () => {
@@ -17,8 +20,8 @@ export async function getCurrentPage() {
 }
 
 async function getCurrentTab() {
-    const [tab] = chrome.tabs.query({active: true, currentWindow: true});
-    if (!tab.id || !tab.url?.startsWith('http')) {
+    const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
+    if (!tab?.id || !tab.url?.startsWith('http')) {
         console.warn("Unable to acquire current tab");
         return null;
     }
@@ -27,6 +30,7 @@ async function getCurrentTab() {
 
 export async function runSelectorOnTab(selector) {
     const tab = await getCurrentTab();
+    if (tab === null) return null;
     const [{result}] = await chrome.scripting.executeScript({
         target: tab.id,
         args: [selector],
@@ -44,4 +48,64 @@ export async function runSelectorOnTab(selector) {
         },
     });
     return result;
+}
+
+export async function insertAutoRejectScript() {
+    return await insertScriptInCurrentTab(true, runBannerHandler);
+}
+
+/**
+ * Execute the given script in the current tab.
+ * @param {boolean} executeInChildFrames
+ * @param {void => void} script
+ * @return {Promise<void>}
+ */
+export async function insertScriptInCurrentTab(executeInChildFrames, script) {
+    const tab = await getCurrentTab();
+    return await insertScriptInATab(tab.id, executeInChildFrames, script);
+}
+
+/**
+ * Executes the specified script in a tab
+ * @param {number} tabId
+ * @param {boolean} executeInChildFrames
+ * @param {void => void} script
+ * @return {Promise<void>}
+ */
+export async function insertScriptInATab(tabId, executeInChildFrames, script) {
+    if (tabId === null || tabId <0) {
+        return null;
+    }
+    return await chrome.scripting.executeScript({
+        target: {tabId: tabId, allFrames: executeInChildFrames},
+        func: script,
+    });
+}
+
+/**
+ * insert a file into the current tab
+ * @param {boolean} executeInChildFrames
+ * @param {list<string>} files
+ * @return {Promise<void>}
+ */
+export async function insertFileInCurrentTab(executeInChildFrames, files) {
+    const tab = await getCurrentTab();
+    return await insertScriptInATab(tab.id, executeInChildFrames, files);
+}
+
+/**
+ * Insert a file into the given tab.
+ * @param {number} tabId
+ * @param {boolean} executeInChildFrames
+ * @param {list<string>} files
+ * @return {Promise<Array<chrome.scripting.InjectionResult<Awaited<unknown>>>|null>}
+ */
+export async function insertFileInATab(tabId, executeInChildFrames, files) {
+    if (tabId === null || tabId <0) {
+        return null;
+    }
+    return await chrome.scripting.executeScript({
+        tabId: {tabId: tabId, allFrames: executeInChildFrames},
+        files: files
+    });
 }

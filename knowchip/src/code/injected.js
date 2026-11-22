@@ -106,7 +106,7 @@ import { scanTracker } from "./deletion/storageDeleter";
                 fireSuspiciousStorageEvent(type, 'existingScan', key, value);
             }
         } catch (error) {
-            console.error(`[]: An error occured during an storage scan
+            console.error(`[]: An error occurred during an storage scan
 ${error.message}`);
         }
     }

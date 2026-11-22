@@ -40,5 +40,5 @@ export async function getTabStorageFromUrl(url) {
  * @returns {Promise<{}>}
  */
 export async function getAllStorageFromTabs() {
-    return getTabFromUrl(['http://*/*','https://*/*'])
+    return getTabStorageFromUrl(['http://*/*','https://*/*'])
 }
