@@ -1,0 +1,98 @@
+[
+  {
+    "id": "01-simple",
+    "num": "01",
+    "name": "One-click rejection",
+    "brand": "PAPERLEAF",
+    "category": "Easy",
+    "summary": "An obvious, accessible button rejects optional cookies immediately.",
+    "theme": "leaf",
+    "headline": "Ideas worth keeping.",
+    "lead": "Independent stories on design, culture and the small things that inspire us.",
+    "mode": "simple"
+  },
+  {
+    "id": "02-choices",
+    "num": "02",
+    "name": "Accept or reject",
+    "brand": "NORTHSTAR",
+    "category": "Easy",
+    "summary": "Equal choices, but the accept button is more visually prominent.",
+    "theme": "north",
+    "headline": "Discover your next escape.",
+    "lead": "Travel notes, city guides and places worth a longer look.",
+    "mode": "choices"
+  },
+  {
+    "id": "03-settings",
+    "num": "03",
+    "name": "Preference settings",
+    "brand": "FORM & FIELD",
+    "category": "Medium",
+    "summary": "No direct rejection: open preferences, switch optional categories off, then save.",
+    "theme": "field",
+    "headline": "Live a little slower.",
+    "lead": "Thoughtful objects and spaces for ordinary days.",
+    "mode": "settings"
+  },
+  {
+    "id": "04-subtle",
+    "num": "04",
+    "name": "Small, subtle notice",
+    "brand": "MINUTE POST",
+    "category": "Medium",
+    "summary": "A discreet text link rejects cookies; the primary button accepts.",
+    "theme": "minute",
+    "headline": "The quiet art of noticing.",
+    "lead": "Good writing for a small pause in a busy world.",
+    "mode": "subtle"
+  },
+  {
+    "id": "05-multistep",
+    "num": "05",
+    "name": "Two-step preferences",
+    "brand": "ATELIER HOME",
+    "category": "Hard",
+    "summary": "A banner leads to an accordion-style preference centre with several toggles.",
+    "theme": "atelier",
+    "headline": "Objects with a story.",
+    "lead": "Furniture, textures and craft for rooms with character.",
+    "mode": "multistep"
+  },
+  {
+    "id": "06-delayed",
+    "num": "06",
+    "name": "Delayed + confirmation",
+    "brand": "CIRCUIT DAILY",
+    "category": "Hard",
+    "summary": "Banner appears after a delay; rejection needs a settings drawer and confirmation.",
+    "theme": "circuit",
+    "headline": "Make sense of what is next.",
+    "lead": "Technology explained without the noise.",
+    "mode": "delayed"
+  },
+  {
+    "id": "07-paywall",
+    "num": "07",
+    "name": "Pay or accept",
+    "brand": "THE LEDGER",
+    "category": "Advanced",
+    "summary": "No free rejection route: accept optional cookies or simulate paying for privacy.",
+    "theme": "ledger",
+    "headline": "Independent journalism, your way.",
+    "lead": "A demonstration of a pay-or-consent choice. No real purchase is possible.",
+    "mode": "paywall"
+  },
+  {
+    "id": "08-language",
+    "num": "08",
+    "name": "Multilingual controls",
+    "brand": "MAISON BLEUE",
+    "category": "Advanced",
+    "summary": "The consent controls are in French; customization is required to reject.",
+    "theme": "maison",
+    "headline": "L\u2019art de vivre.",
+    "lead": "Histoires, culture et inspirations du quotidien.",
+    "mode": "language"
+  }
+]
