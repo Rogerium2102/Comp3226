@@ -1,6 +1,16 @@
 import { dumpCookies } from "./popup";
+import { getAllStorageFromTabs } from "./Storage/SessionHandler";
+import { useEffect } from "react";
 
 export function HomePage({ onNavigate }){
+  useEffect(() => {
+    async function bs(){
+      let storage = await getAllStorageFromTabs()
+      console.log(" THIS IS THE STORAGE PLUH")
+      console.log(storage) 
+    }
+    bs()}
+  ,[])
     return(
 <div className='w-72 p-4 bg-gray-50 rounded-lg shadow-md font-sans'>
       <h2 className='text-xl font-bold mb-2 text-gray-800'>Cookie thing</h2>
