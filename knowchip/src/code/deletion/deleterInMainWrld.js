@@ -64,7 +64,7 @@ export async function scanTracker(key, storageObj = null) {
         const status = await new Promise((callback) => {
             //Receives status of checked tracker name
             const listenerName = "BLACKLIST_STATUS_TO_MAIN";
-            window.addEventListener(listenerName,new function handler(event){
+            window.addEventListener(listenerName, function handler(event){
                 if (event.detail?.key === key) {
                     window.removeEventListener(listenerName, handler);
                     callback(Number(event.detail.status));

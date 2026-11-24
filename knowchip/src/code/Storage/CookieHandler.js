@@ -90,3 +90,15 @@ export async function getCookiesByPredicate(predicate) {
     const cookies = await getAllCookies();
     return cookies.filter(predicate);
 }
+
+/**
+ * Gets local site data
+ * @returns {Dict[String, String]} - Returns key value pairs from local storage
+ */
+export async function getLocalData() {}
+
+/**
+ * Gets session site data
+ * @returns {Dict[String, String]} - Returns key value pairs from sessions storage
+ */
+export async function getSessionData() {}
