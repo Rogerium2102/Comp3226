@@ -1,23 +1,17 @@
-import { getAllCookies , getAllCookiesInternal} from "./Storage/CookieHandler";
-import { useState, useEffect } from 'react';
+import { getAllCookies } from "./Storage/CookieHandler";
+import { useState, useEffect, Fragment } from 'react';
 import { purgeCookies } from "./deletion/cookieDeleter";
 import { invalidateCache } from "./Storage/CookieHandler";
 // import { purgeCookie, wipeCookie } from "./deletion/cookieDeleter"
 
-function handleDelete(cookie){
-
-}
-function handleWipe(cookie){
-
-}
 export function CookiePage({ onBack }){
     const [cookies,setCookies] = useState([]);
-    const [expandedKey, setExpandedKey] = useState(null);
+    const [expandedKey, setExpandedKey] = useState("");
     const [open, setOpen] = useState(false);
     async function loadCookies(){
       console.log("reloading cookies")
       await invalidateCache()
-      const data = await getAllCookiesInternal()
+      const data = await getAllCookies()
       setCookies(data || [])
     }
     useEffect (() =>{
@@ -29,7 +23,7 @@ export function CookiePage({ onBack }){
       <div className="container px-2 py-6 mx-auto">
         <button className="bg-gray-200 text-white w-7 h-7 rounded hover:bg-gray-300 cursor-pointer items-center justify-center inline-flex"
               type="button" onClick={() => onBack('home')}>
-                <img src="/back.png" className="w-6 h-auto block"></img>
+                <img src="/back.png" alt={"back"} className="w-6 h-auto block"></img>
         </button>
         <div className="text-center">
           <h1 className="text-lg text-black">Your Cookies</h1>
@@ -37,7 +31,7 @@ export function CookiePage({ onBack }){
           <div className="space-y-2">
               <button className="bg-blue-200 text-white w-7 h-7 rounded hover:bg-blue-300 cursor-pointer items-center justify-center inline-flex"
               type="button" onClick={()=>{setOpen(true);}}>
-                <img src="/info.png" className="w-6 h-auto block"></img>
+                <img src="/info.png" alt={"info"} className="w-6 h-auto block"></img>
               </button>
               {open && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
@@ -61,6 +55,7 @@ export function CookiePage({ onBack }){
                               Session</th>
                         </tr>
                       </thead>
+                        <tbody className="divide-y divide-gray-200 bg-white">
                       <tr>
                         <td>Blocks JavaScript from reading or modifying the cookie</td>
                         <td>Tells the browser to send the cookie only over encrypted connections (safer)</td>
@@ -68,41 +63,43 @@ export function CookiePage({ onBack }){
                         <td>Restrics the browser so it can only send this cookie to the host that set it</td>
                         <td>These are important and essential to interact with login features</td>
                       </tr>
+                        </tbody>
                     </table>
                     <div className="flex gap-3">
                     <button type="button" className="bg-red-400 text-white w-7 h-7 rounded items-center justify-center inline-flex" 
                     onClick={()=> {purgeCookies(cookies); loadCookies()}}>
-                      <img src="/bin.png" className="w-6 h-auto block"></img>
+                      <img src="/bin.png" alt={"bin"} className="w-6 h-auto block"></img>
                     </button>    
-                    <button type="button" class=" bg-red-400 image-button rounded w-7 h-7 items-center justify-center inline-flex">
-                        <img src="/delete.png" class="w-50 h-auto"></img>
+                    <button type="button" className=" bg-red-400 image-button rounded w-7 h-7 items-center justify-center inline-flex">
+                        <img src="/delete.png" alt={"delete"} className="w-50 h-auto"></img>
                     </button>
                       <p>Delete all cookies/ delete a cookie</p>
                     </div>
                     <div className="flex gap-3">
                     <button type="button" className="bg-green-400 text-white w-7 h-7 rounded items-center justify-center inline-flex" >
-                      <img src="/refresh.png" className="w-6 h-auto block"></img>
+                      <img src="/refresh.png" alt={"refresh"} className="w-6 h-auto block"></img>
                     </button>
                     <p>This refreshes the table and presents all your current cookies</p>
                   </div>
                     <button className="bg-gray-200 text-white w-7 h-7 rounded hover:bg-gray-300 cursor-pointer items-center justify-center inline-flex"
                     type="button" onClick={() => setOpen(false)}>
-                      <img src="/back.png" className="w-6 h-auto block"></img>
+                      <img src="/back.png" alt={"back"} className="w-6 h-auto block"></img>
                     </button>
                   </div>
                 </div>
                 )}
               <button type="button" className="bg-green-400 text-white w-7 h-7 cursor-pointer rounded hover:bg-green-500 items-center justify-center inline-flex" 
               onClick={() =>{loadCookies()}}>
-                <img src="/refresh.png" className="w-6 h-auto block"></img>
+                <img src="/refresh.png" alt={"refresh"} className="w-6 h-auto block"></img>
               </button>
               <button type="button" className="bg-red-400 text-white w-7 h-7 cursor-pointer rounded hover:bg-red-500 items-center justify-center inline-flex" 
               onClick={()=> {purgeCookies(cookies); loadCookies()}}>
-                <img src="/bin.png" className="w-6 h-auto block"></img>
+                <img src="/bin.png" alt={"bin"} className="w-6 h-auto block"></img>
               </button>
           <div className="text-center">
             <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
               <table className="w-full divide-y divide-gray-200 text-sm text-left py-2">
+
                 <thead className="bg-gray-50 font-semibold text-gray-700">
                   <tr>
                     <th className="px-2 py-2 w-20">-</th>
@@ -111,7 +108,7 @@ export function CookiePage({ onBack }){
                     <th className="px-2 py-2 w-24">Flags</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200 bg-white">
+                  <tbody className="divide-y divide-gray-200 bg-white">
                   {cookies.length === 0 ? (
                     <tr onClick={()=> {}}>
                       <td colSpan={6} className="px-2 py-6 text-center text-gray-400 italic">
@@ -121,7 +118,7 @@ export function CookiePage({ onBack }){
                 ) : (
                 cookies.map((cookie, idx) => {
                 const cookieKey = `${cookie.domain}-${cookie.name}-${idx}`;
-                const isExpanded = expandedKey == cookieKey
+                const isExpanded = expandedKey === cookieKey
 
                 return (
                   <Fragment key={cookieKey}>
@@ -132,8 +129,8 @@ export function CookiePage({ onBack }){
                           e.stopPropagation();
                           purgeCookie(cookie)
                           loadCookies();
-                          }}  type="button" class="bg-yellow-400 cursor-pointer image-button rounded hover:bg-yellow-500 w-7 h-7">
-                          <img src="/delete.png" class="w-50 h-auto"></img>
+                          }}  type="button" className="bg-yellow-400 cursor-pointer image-button rounded hover:bg-yellow-500 w-7 h-7">
+                          <img src="/delete.png" alt={"delete"} className="w-50 h-auto"></img>
                         </button>
                         {/* <button onClick={(e)=> {
                           e.stopPropagation();
@@ -144,10 +141,10 @@ export function CookiePage({ onBack }){
                         </button> */}
                      </div>
                    </td>
-                   <td className="px-2 py-2 truncate font-medium text-blue-600 max-w-[120px]">
+                   <td className="px-2 py-2 truncate font-medium text-blue-600 max-w-30">
                     {cookie.name}
                    </td>
-                   <td className="px-2 py-2 truncate text-gray-600 max-w-[120px]">
+                   <td className="px-2 py-2 truncate text-gray-600 max-w-30">
                     {cookie.domain}
                    </td>
                     <td className="px-2 py-2 truncate">

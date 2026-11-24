@@ -1,5 +1,5 @@
 
-export async function getAllCookiesInternal() {
+async function getAllCookiesInternal() {
     try {
         const cookies = await chrome.cookies.getAll({});
         return cookies || [];
@@ -29,7 +29,7 @@ export async function getAllCookies() {
         if (memoryCache.length > 0 && now < cacheExpiry) {
             return memoryCache;
         }
-        const data = await chrome.storage.session.get("sessionExpiry, sessionCookies");
+        const data = await chrome.storage.session.get(["sessionExpiry", "sessionCookies"]);
         if (data.sessionCookies && data.sessionExpiry && now < data.sessionExpiry) {
             memoryCache = data.sessionCookies;
             cacheExpiry = data.sessionExpiry;
