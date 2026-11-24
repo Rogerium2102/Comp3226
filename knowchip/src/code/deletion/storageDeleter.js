@@ -7,6 +7,7 @@
  * @returns {Bool} - If any deletions occurred
  */
 export function purgeTracker(storageObj, key, equals = false, bin = true) {
+    console.warn("storageDeleter/purgeTracker is depreciated use deleterInMainWrld/purgeTracker instead");
     try {
         //Validate storage object
         if (!storageObj || typeof storageObj.removeItem !== 'function') {
@@ -60,6 +61,7 @@ export function purgeTracker(storageObj, key, equals = false, bin = true) {
  * @returns {Promise<Bool>}
  */
 export async function scanTracker(key, storageObj = null) {
+    console.warn("storageDeleter/scanTracker is depreciated use deleterInMainWrld/scanTracker instead");
     try {
         const status = await new Promise((callback) => {
             //Receives status of checked tracker name

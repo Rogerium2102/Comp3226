@@ -6,6 +6,7 @@ import {store, getURL, cleanCookie} from './recyclingBin.js';
  * @returns {Promise<Bool>} - Success flag
  */
 export async function purgeCookies(cookies) {
+    console.warn("cookieDeleter/purgeCookies is depreciated use deleterInExtWrld/purgeCookies instead");
     return batchHandle(cookies, false);
 }
 
@@ -15,6 +16,7 @@ export async function purgeCookies(cookies) {
  * @returns {Promise<Bool>} - Success flag
  */
 export async function wipeCookies(cookies) {
+    console.warn("cookieDeleter/wipeCookies is depreciated use deleterInExtWrld/wipeCookies instead");
     return batchHandle(cookies, true);
 }
 
@@ -25,6 +27,7 @@ export async function wipeCookies(cookies) {
  * @returns {Promise<Bool>} - Success flag
  */
 async function batchHandle(cookies, isWiping) {
+    console.warn("cookieDeleter/batchHandle is depreciated use deleterInExtWrld/batchHandle instead");
     const opMsg = isWiping ? "wiping" : "deleting";
     const opFunc = isWiping ? wipeCookie : purgeCookie;
     try {
@@ -49,6 +52,7 @@ async function batchHandle(cookies, isWiping) {
  * @returns {Promise<Bool>}
  */
 export async function purgeCookie(cookie) {
+    console.warn("cookieDeleter/purgeCookie is depreciated use deleterInExtWrld/purgeCookie instead");
     try {
         //Constructs separate cookie, prevents sending out unnecessary user details
         const cookieDetails = {
@@ -83,6 +87,7 @@ export async function purgeCookie(cookie) {
  * @returns {Promise<Bool>}
  */
 export async function wipeCookie(cookie) {
+    console.warn("cookieDeleter/wipeCookie is depreciated use deleterInExtWrld/wipeCookie instead");
     try {
         let cookieDetails = {...cookie}; //Creates shallow copy of cookie for editing
         getURL(cookieDetails);

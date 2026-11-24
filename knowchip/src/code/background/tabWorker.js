@@ -124,6 +124,48 @@ export async function insertCommsScript() {
         if (window.commsLoaded) return; //Prevents duplicate listeners
         window.commsLoaded = true;
 
+        //Listener for any messages from EXTENSION environments
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+
+            switch (message.type) {
+                case "REQUEST_DELETION_TO_ISOLATED":
+                    //Creates listener for status response from MAIN
+                    const listenerName = "DELETION_STATUS_TO_ISOLATED";
+                    function handler(event) { //Needs to be accessed by default statement below
+                        if (event.detail?.datatype === message.datatype) {
+                            window.removeEventListener(listenerName, handler);
+                            sendResponse({ success: Boolean(event.detail.success) });
+                        }
+                    }
+                    window.addEventListener(listenerName, handler);
+
+                    switch (message?.datatype) {
+                        //Fired by requestTrackerDeletion from deleterInExtWrld.js
+                        //Sends message to injected.js
+                        //Listens to MAIN response and forwards back to extension
+                        case "tracker":
+                            window.dispatchEvent(
+                                new CustomEvent("DELETE_TRACKER_TO_MAIN", {
+                                    detail: {
+                                        key: message.key,
+                                        strict: message.strict
+                                    }
+                                })
+                            );
+                            return true; //Keeps channel open
+
+                        default:
+                            console.error("Malformed message.datatype entered");
+                            window.removeEventListener(listenerName, handler);
+                            return false;
+                    }
+
+                default:
+                    break;
+            }
+
+        });
+
         //Fired by purgeTracker from storageDeleter.js, passes deleted tracker key to extension world
         //Passes it to background.js
         window.addEventListener("DELETED_TRACKERS_TO_ISOLATED", async (event) => {

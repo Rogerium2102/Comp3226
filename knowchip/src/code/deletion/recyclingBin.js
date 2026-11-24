@@ -1,6 +1,6 @@
 //The recycling bin stores deleted cookies and ensures they don't reappear
 
-import { purgeCookie, wipeCookie } from "./cookieDeleter.js";
+import { purgeCookie, wipeCookie } from "./deleterInExtWrld.js";
 
 //Exported functions
 

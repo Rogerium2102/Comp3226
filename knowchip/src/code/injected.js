@@ -1,9 +1,12 @@
-import { scanTracker } from "./deletion/storageDeleter";
+import { purgeTracker, scanTracker } from "./deletion/deleterInMainWrld";
 
 /**
  * Wrapper function for easy injection into a page. When page is loaded this script will immediately run.
  */
 (function () {
+    if (window.injectorLoaded) return;
+    window.injectorLoaded = true;
+
     const cookiePatterns = [
         /session[-_]?id/i,
         /auth[-_]?token/i,
@@ -120,5 +123,22 @@ ${error.message}`);
 
     storageScan(window.localStorage, 'localStorage');
     storageScan(window.sessionStorage, 'sessionStorage');
+
+    //Received from tabWorker.js
+    //Deletes tracker
+    window.addEventListener("DELETE_TRACKER_TO_MAIN", (event) => {
+        const { key, strict } = event.detail;
+        //Deletes trackers from both storages
+        const deletedLocal = purgeTracker(window.localStorage, key, strict, false);
+        const deletedSession = purgeTracker(window.sessionStorage, key, strict, false);
+        window.dispatchEvent(
+            new CustomEvent("DELETION_STATUS_TO_ISOLATED", {
+                detail: {
+                    datatype: "tracker",
+                    success: deletedLocal || deletedSession //Deletion occurred in either
+                }
+            })
+        );
+    });
 })();
 
