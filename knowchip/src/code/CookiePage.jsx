@@ -1,7 +1,6 @@
-import { getAllCookies } from "./Storage/CookieHandler";
+import { getAllCookies, invalidateCache } from "./Storage/CookieHandler";
 import { useState, useEffect, Fragment } from 'react';
-import { purgeCookies } from "./deletion/cookieDeleter";
-import { invalidateCache } from "./Storage/CookieHandler";
+import { purgeCookies, purgeCookie } from "./deletion/deleterInExtWrld";
 // import { purgeCookie, wipeCookie } from "./deletion/cookieDeleter"
 
 export function CookiePage({ onBack }){
