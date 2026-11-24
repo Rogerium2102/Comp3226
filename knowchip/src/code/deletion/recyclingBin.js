@@ -5,6 +5,134 @@ import { purgeCookie, wipeCookie } from "./deleterInExtWrld.js";
 //Exported functions
 
 /**
+ * Outputs all deleted cookies
+ * @returns {Promise<String[]>} - Array of deleted cookies
+ */
+export async function getDeleted() {
+    if (deleteBin === null) await loadBins();
+    return deleteBin;
+}
+
+/**
+ * Outputs all wiped cookies
+ * @returns {Promise<String[]>} - Array of wiped cookies
+ */
+export async function getWiped() {
+    if (wipeBin === null) await loadBins();
+    return wipeBin;
+}
+
+/**
+ * Outputs all deleted trackers
+ * @returns {Promise<String[]>} - Array of deleted tracker objects
+ */
+export async function getTrackers() {
+    if (trackerBin === null) await loadBins();
+    return trackerBin;
+}
+
+/**
+ * Regenerates a deleted cookie/tracker
+ * @param {String} idx - Index of the cookie/tracker to be regenerated
+ * @param {Bool} isCookie - Whether a cookie or a tracker needs to be regened
+ * @param {Bool} wiped - Whether the cookie is from the wipe bin or delete bin
+ * @returns {Promise<Bool>} - If cookie/tracker was successfully revived
+ */
+export async function regen(idx, isCookie, wiped = false) {
+    try {
+        const entry = await get(idx, isCookie, wiped, false); //Doesn't delete cookie until regen success
+        if (!entry) {
+            console.error(`Entry at index ${idx} not found in bin`);
+            return false;
+        }
+
+        if (isCookie) {
+            if (!entry.url) getURL(entry); //Cookies are required to be set with a URL
+            cleanCookie(entry);
+            await chrome.cookies.set(entry);
+        } else {
+            console.error(`Regenerating trackers not implemented`);
+            return false
+        }
+
+        const { key, selectedBin } = getKeys(isCookie, wiped);
+        await removeEntry(idx, key, selectedBin); //Deletes cookie from bin only after success
+
+        return true;
+    } catch (err) {
+        console.error(`Error regenerating cookie/tracker at index ${idx}: ${err}`);
+        return false;
+    }
+}
+
+/**
+ * Compares an input tracker against the blacklist
+ * @param {string} key
+ * @returns {Promise<Bool>} - Match in blacklist
+ */
+export async function checkBlacklist(key){
+    if (blacklist === null) await loadBins();
+    try {
+        for (const [banKey, exact] of blacklist) {
+            if (exact && key === banKey) return true;
+            else if (!exact && key.includes(banKey)) return true;
+        }
+        return false;
+    } catch (err) {
+        console.error(`Error comparing tracker ${key} with blacklist: ${err}`);
+        return false;
+    }
+}
+
+/**
+ * Adds a tracker string to the blacklist
+ * @param {string} key
+ * @param {Bool} exact - Whether this string is a complete or partial name
+ * @param {Bool} enforce - Whether the blacklist should be adapted for this string or this string be adapted to the blacklist
+ * @returns {Promise<[Bool, Bool]>} - Success, Field needs update
+ */
+export async function enterBlacklist(key, exact, enforce = false){
+    if (blacklist === null) await loadBins();
+    try {
+        let placed = false; //Whether the input value has been accounted for in the blacklist
+        let updated = false; //Whether storage needs update
+        for (const entry of blacklist) {
+            if (entry[0] === key) { //Exact matching key found
+                placed = updated = true;
+                if (enforce)entry[1] = exact; //Forces blacklist to change exact value
+                else        entry[1] = entry[1] && exact; //Prioritises False values
+
+            } else if (key.includes(entry[0])) { //Input key contains blacklist key within it
+                if (entry[1]) continue; //Smaller key requires to be exactly that would not overlap with larger key
+                else placed = true; //Smaller key is already covers all cases in which new one does
+
+            } else if (entry[0].includes(key)) { //Blacklist key contains input key within it
+                if (exact) continue; //Smaller key requires to be exactly that would not overlap with larger key
+                else { //Smaller key that accepts being a subset will always override larger key
+                    placed = updated = true;
+                    entry[0] = key;
+                    entry[1] = exact;
+                }
+            }
+        }
+
+        if (!placed) { //Adds new entry
+            blacklist.push([key, exact]);
+            placed = updated = true;
+        }
+
+        blacklist = [...new Map(blacklist)]; //Cleans duplicates
+
+        if (updated) await chrome.storage.local.set({ ["blacklist"] : blacklist }); //Backups the blacklist in local storage
+
+        return [true, updated];
+    } catch (err) {
+        console.error(`Error appending tracker ${key} into blacklist: ${err}`);
+        return [false, false];
+    }
+}
+
+/**
  * Stores a cookie/tracker that has been deleted
  * @param {chrome.cookies.Cookie | String} entry
  * @param {Bool} wiped - Not applicable to tracker entries, whether the cookie was wiped rather than deleted
@@ -90,17 +218,9 @@ export async function get(idx, isCookie, wiped = false, del = false) {
  * @returns {Promise<chrome.cookies.Cookie[]>} - Array of deleted cookie objects
  */
 export async function getCookies() {
+    console.error("This is depreciated");
     if (deleteBin === null || wipeBin === null) await loadBins();
     return [...deleteBin, ...wipeBin];
-}
-
-/**
- * Outputs all deleted trackers
- * @returns {Promise<String[]>} - Array of deleted tracker objects
- */
-export async function getTrackers() {
-    if (trackerBin === null) await loadBins();
-    return trackerBin;
 }
 
 /**
@@ -135,40 +255,6 @@ export async function checkBin(entry) {
     } catch (err) {
         console.error(`Error checking cookie ${name} in bin: ${err}`);
         return { match : false, func : null };
-    }
-}
-
-/**
- * Regenerates a deleted cookie/tracker
- * @param {String} idx - Index of the cookie/tracker to be regenerated
- * @param {Bool} isCookie - Whether a cookie or a tracker needs to be regened
- * @param {Bool} wiped - Whether the cookie is from the wipe bin or delete bin
- * @returns {Promise<Bool>} - If cookie/tracker was successfully revived
- */
-export async function regen(idx, isCookie, wiped = false) {
-    try {
-        const entry = await get(idx, isCookie, wiped, false); //Doesn't delete cookie until regen success
-        if (!entry) {
-            console.error(`Entry at index ${idx} not found in bin`);
-            return false;
-        }
-
-        if (isCookie) {
-            if (!entry.url) getURL(entry); //Cookies are required to be set with a URL
-            cleanCookie(entry);
-            await chrome.cookies.set(entry);
-        } else {
-            console.error(`Regenerating trackers not implemented`);
-            return false
-        }
-
-        const { key, selectedBin } = getKeys(isCookie, wiped);
-        await removeEntry(idx, key, selectedBin); //Deletes cookie from bin only after success
-
-        return true;
-    } catch (err) {
-        console.error(`Error regenerating cookie/tracker at index ${idx}: ${err}`);
-        return false;
     }
 }
 
@@ -220,73 +306,6 @@ export function cleanCookie(cookie) {
         return true;
     } catch (err) {
         console.error(`Error cleaning cookies: ${err}`);
-        return false;
-    }
-}
-
-/**
- * Adds a tracker string to the blacklist
- * @param {string} key
- * @param {Bool} exact - Whether this string is a complete or partial name
- * @param {Bool} enforce - Whether the blacklist should be adapted for this string or this string be adapted to the blacklist
- * @returns {Promise<[Bool, Bool]>} - Success, Field needs update
- */
-export async function enterBlacklist(key, exact, enforce = false){
-    if (blacklist === null) await loadBins();
-    try {
-        let placed = false; //Whether the input value has been accounted for in the blacklist
-        let updated = false; //Whether storage needs update
-        for (const entry of blacklist) {
-            if (entry[0] === key) { //Exact matching key found
-                placed = updated = true;
-                if (enforce)entry[1] = exact; //Forces blacklist to change exact value
-                else        entry[1] = entry[1] && exact; //Prioritises False values
-
-            } else if (key.includes(entry[0])) { //Input key contains blacklist key within it
-                if (entry[1]) continue; //Smaller key requires to be exactly that would not overlap with larger key
-                else placed = true; //Smaller key is already covers all cases in which new one does
-
-            } else if (entry[0].includes(key)) { //Blacklist key contains input key within it
-                if (exact) continue; //Smaller key requires to be exactly that would not overlap with larger key
-                else { //Smaller key that accepts being a subset will always override larger key
-                    placed = updated = true;
-                    entry[0] = key;
-                    entry[1] = exact;
-                }
-            }
-        }
-
-        if (!placed) { //Adds new entry
-            blacklist.push([key, exact]);
-            placed = updated = true;
-        }
-
-        blacklist = [...new Map(blacklist)]; //Cleans duplicates
-
-        if (updated) await chrome.storage.local.set({ ["blacklist"] : blacklist }); //Backups the blacklist in local storage
-
-        return [true, updated];
-    } catch (err) {
-        console.error(`Error appending tracker ${key} into blacklist: ${err}`);
-        return [false, false];
-    }
-}
-
-/**
- * Compares an input tracker against the blacklist
- * @param {string} key
- * @returns {Promise<Bool>} - Match in blacklist
- */
-export async function checkBlacklist(key){
-    if (blacklist === null) await loadBins();
-    try {
-        for (const [banKey, exact] of blacklist) {
-            if (exact && key === banKey) return true;
-            else if (!exact && key.includes(banKey)) return true;
-        }
-        return false;
-    } catch (err) {
-        console.error(`Error comparing tracker ${key} with blacklist: ${err}`);
         return false;
     }
 }
