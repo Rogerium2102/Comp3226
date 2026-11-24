@@ -56,7 +56,7 @@ export function purgeTracker(storageObj, key, equals = false, bin = true) {
 /**
  * //Scans a specific tracker to see if its present in recycling bin (RUNS IN MAIN WORLD)
  * @param {string} key - Tracker name to delete
- * @param {Object} storageObj - Imported local storage from site
+ * @param {Object} storageObj - Imported local storage from site, not required if no deletion required
  * @returns {Promise<Bool>}
  */
 export async function scanTracker(key, storageObj = null) {

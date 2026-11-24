@@ -113,7 +113,10 @@ import { purgeTracker, scanTracker } from "./deletion/deleterInMainWrld";
             for (let i = 0; i < storage.length; i++) {
                 const key = storage.key(i);
                 const value = storage.getItem(key);
-                await fireSuspiciousStorageEvent(type, 'existingScan', key, value);
+                if (!await fireSuspiciousStorageEvent(type, 'existingScan', key, value)) {
+                    const response = await purgeTracker(storage, key, true, false); //Deletes a found tracker without storing it
+                    if (response) i--; //Decrements back as for loop is amended by deletion
+                }
             }
         } catch (error) {
             console.error(`[]: An error occurred during an storage scan
