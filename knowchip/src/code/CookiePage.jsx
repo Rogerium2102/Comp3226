@@ -1,6 +1,7 @@
 import { getAllCookies , getAllCookiesInternal} from "./Storage/CookieHandler";
-import { useState, useEffect, Fragment} from 'react';
-import { purgeCookies, wipeCookies, purgeCookie,wipeCookie } from "./deletion/cookieDeleter";
+import { useState, useEffect } from 'react';
+import { purgeCookies } from "./deletion/cookieDeleter";
+import { invalidateCache } from "./Storage/CookieHandler";
 // import { purgeCookie, wipeCookie } from "./deletion/cookieDeleter"
 
 function handleDelete(cookie){
@@ -15,6 +16,7 @@ export function CookiePage({ onBack }){
     const [open, setOpen] = useState(false);
     async function loadCookies(){
       console.log("reloading cookies")
+      await invalidateCache()
       const data = await getAllCookiesInternal()
       setCookies(data || [])
     }

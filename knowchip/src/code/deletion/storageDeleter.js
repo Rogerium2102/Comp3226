@@ -1,59 +1,107 @@
 /**
- * Deletes a specific tracker from storages
- * @param {string} key
+ * Deletes a specific tracker from storages (HAS TO RUN IN MAIN WORLD)
+ * @param {Object} storageObj - Imported local storage from site
+ * @param {string} key - Tracker name to delete
  * @param {Bool} equals - Whether to match the key exactly or partially
- * @returns {Promise<chrome.cookies.Cookie | null>}
+ * @param {Bool} bin - Whether to store deleted tracker in bin
+ * @returns {Bool} - If any deletions occurred
  */
-export async function purgeTracker(key, equals) {
+export function purgeTracker(storageObj, key, equals = false, bin = true) {
+    console.warn("storageDeleter/purgeTracker is depreciated use deleterInMainWrld/purgeTracker instead");
     try {
-        let searchKeys;
-        if (equals) searchKeys = [key];
-        else {
-            let result;
-            //Fetches all items from storage
-            result = await chrome.browsingData.removeSessionStorage({ origins: [] }); //Dict of all items in storage
-
-            //Filters items to only those containing the key
-            searchKeys = Object.keys(result).filter(k => k.includes(key)); //String[]
+        //Validate storage object
+        if (!storageObj || typeof storageObj.removeItem !== 'function') {
+            console.error("Invalid storage object passed to purgeTracker");
+            return false;
         }
 
-        await chrome.browsingData.removeSessionStorage({ origins: searchKeys});
+        //Finds trackers in storage
+        let searchKeys = [];
+        if (equals) {
+            if (storageObj.getItem(key) !== null) searchKeys = [key]; //Only adds tracker if storage contains it
+        } else {
+            for (let i = 0; i < storageObj.length; i++) { //Searches all items in storage
+                const k = storageObj.key(i);
+                if (k && k.includes(key)) searchKeys.push(k); //Adds scanned object if it contains the key
+            }
+        }
+
+        //Exits is no found trackers
+        if (searchKeys.length < 1) {
+            console.log(`No trackers found ${equals ? "matching" : "containing"} ${key}`);
+            return false;
+        }
+
+        //Removes object from storage
+        for (const k of searchKeys) {
+            storageObj.removeItem(k); //RemoveItem is synchronous so no need to await it
+        }
+        //Fires event to add tracker to bin
+        if (bin) {
+            //PurgeTracker runs in MAIN world, whereas store needs to run in extension world to access extension storage
+            //This passes it to comms.js which is in ISOLATED world
+            window.dispatchEvent(
+                new CustomEvent("DELETED_TRACKERS_TO_ISOLATED", {
+                    detail: { keys: searchKeys }
+                })
+            );
+        }
 
         return true;
     } catch (err) {
-        console.error(`Failed to delete ${isSession ? "session" : "local"} storage value ${equals ? "matching" : "containing"} ${key}:`, err);
+        console.error(`Failed to delete tracker storage value ${equals ? "matching" : "containing"} ${key}:`, err);
         return false;
     }
 }
 
 /**
- * //Wipes the value of a cookie to prevent it from tracking a user
- * @param {chrome.cookies.Cookie} cookie
- * @returns {Promise<chrome.cookies.Cookie | null>}
+ * //Scans a specific tracker to see if its present in recycling bin (HAS TO RUN IN MAIN WORLD)
+ * @param {string} key - Tracker name to delete
+ * @param {Object} storageObj - Imported local storage from site
+ * @returns {Promise<Bool>}
  */
-async function wipeCookie(cookie) {
-    let cookieDetails = {...cookie}; //Creates shallow copy of cookie for editing
-    getURL(cookieDetails);
-    cookieDetails.value = "0"; //Wipes tracking value with truthy value
-
-    //Cookie retrieval adds domain to host-only cookies, if domain set then it will be treated as a new cookie
-    if (cookieDetails.domain && cookieDetails.hostOnly) cookieDetails.domain = undefined;
-    //Unspecified value will error when setting a cookie
-    if (cookieDetails.sameSite == "unspecified") cookieDetails.sameSite = undefined;
-
+export async function scanTracker(key, storageObj = null) {
+    console.warn("storageDeleter/scanTracker is depreciated use deleterInMainWrld/scanTracker instead");
     try {
-        const result = await chrome.cookies.set(cookieDetails); //Returns dict of created cookie
+        const status = await new Promise((callback) => {
+            //Receives status of checked tracker name
+            const listenerName = "BLACKLIST_STATUS_TO_MAIN";
+            window.addEventListener(listenerName, function handler(event){
+                if (event.detail?.key === key) {
+                    window.removeEventListener(listenerName, handler);
+                    callback(Number(event.detail.status));
+                }
+            });
 
-        if (result) {
-            console.log(`Successfully neutralized cookie: ${result.name}`);
-            await store(cookie); //Stores wiped cookie in recycling bin
+            //Sends tracker name to recyclingBin.js through comms.js
+            window.dispatchEvent(
+                new CustomEvent("CHECK_TRACKER_TO_ISOLATED", {
+                    detail: { key: key }
+                })
+            );
+        });
+
+        if (storageObj) {
+            switch (status) {
+                case 0: //No match
+                    return false;
+                case 1: //Match in recycling bin
+                    return purgeTracker(storageObj, key, true, false);
+                case 2: //Match in blacklist
+                    return purgeTracker(storageObj, key, true, true); //Places tracker in bin
+                default:
+                    console.error(`Incorrect status (${status}) return from ${key}`);
+                    return false;
+            }
         } else {
-            console.warn(`Failed to wipe cookie ${cookieDetails.name}`);
+            if (status < 0) {
+                console.error(`Incorrect status (${status}) return from ${key}`);
+                return false;
+            } else return status !== 0;
         }
-
-        return result;
+        
     } catch (err) {
-        console.error(`Failed to wipe cookie ${cookieDetails.name}:`, err);
-        return null;
+        console.error(`Failed to scan tracker ${key}:`, err);
+        return false;
     }
 }

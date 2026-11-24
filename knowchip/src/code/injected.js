@@ -1,7 +1,12 @@
+import { purgeTracker, scanTracker } from "./deletion/deleterInMainWrld";
+
 /**
  * Wrapper function for easy injection into a page. When page is loaded this script will immediately run.
  */
 (function () {
+    if (window.injectorLoaded) return;
+    window.injectorLoaded = true;
+
     const cookiePatterns = [
         /session[-_]?id/i,
         /auth[-_]?token/i,
@@ -33,8 +38,11 @@
      * @param {string} action
      * @param {string} key
      * @param value
+     * @returns {Bool} - Whether the data isn't a tracker
      */
-    function fireSuspiciousStorageEvent(type, action, key, value) {
+    async function fireSuspiciousStorageEvent(type, action, key, value) {
+        if (await scanTracker(key)) return false; //Prevents tracker from spawning if found in blacklist/bin
+
         if (isPairProbablyTrackingCookie(key, value)) {
             console.warn(`[] ${type}.${action} detected a potential tracking cookie`);
 
@@ -43,14 +51,18 @@
                     detail: {type, action, key, value, timestamp: Date.now()}
                 })
             )
+            return false;
         }
+
+        return true;
     }
 
     const originalSetItem = Storage.prototype.setItem;
-    Storage.prototype.setItem = function (key, value) {
+    Storage.prototype.setItem = async function (key, value) {
         const storageType = this === window.localStorage ? 'localStorage' : 'sessionStorage';
-        fireSuspiciousStorageEvent(storageType, 'setItem', key, value);
-        return originalSetItem.apply(this, arguments);
+        if (await fireSuspiciousStorageEvent(storageType, 'setItem', key, value)) {
+            return originalSetItem.apply(this, arguments);
+        }
     }
 
     /**
@@ -96,20 +108,40 @@
      * @param storage
      * @param type
      */
-    function storageScan(storage, type) {
+    async function storageScan(storage, type) {
         try {
             for (let i = 0; i < storage.length; i++) {
                 const key = storage.key(i);
                 const value = storage.getItem(key);
-                fireSuspiciousStorageEvent(type, 'existingScan', key, value);
+                if (!await fireSuspiciousStorageEvent(type, 'existingScan', key, value)) {
+                    const response = await purgeTracker(storage, key, true, false); //Deletes a found tracker without storing it
+                    if (response) i--; //Decrements back as for loop is amended by deletion
+                }
             }
         } catch (error) {
-            console.error(`[]: An error occured during an storage scan
+            console.error(`[]: An error occurred during an storage scan
 ${error.message}`);
         }
     }
 
     storageScan(window.localStorage, 'localStorage');
     storageScan(window.sessionStorage, 'sessionStorage');
+
+    //Received from tabWorker.js
+    //Deletes tracker
+    window.addEventListener("DELETE_TRACKER_TO_MAIN", (event) => {
+        const { key, strict } = event.detail;
+        //Deletes trackers from both storages
+        const deletedLocal = purgeTracker(window.localStorage, key, strict, false);
+        const deletedSession = purgeTracker(window.sessionStorage, key, strict, false);
+        window.dispatchEvent(
+            new CustomEvent("DELETION_STATUS_TO_ISOLATED", {
+                detail: {
+                    datatype: "tracker",
+                    success: deletedLocal || deletedSession //Deletion occurred in either
+                }
+            })
+        );
+    });
 })();
 
