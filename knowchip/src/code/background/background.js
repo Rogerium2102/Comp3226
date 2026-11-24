@@ -4,6 +4,16 @@ import { store, checkBin, checkBlacklist, enterBlacklist } from "../deletion/rec
 console.log("Cookie rejected\nEverything's fine. Don't worry.");
 
 const delay = ms => new Promise(resolve => setTimeout(resolve, ms));
+
+async function UpdateBannerTotal(reset) {
+    let currentTotal = -1;
+    if (!reset) {
+        currentTotal = await chrome.storage.local.get("BannerTotal");
+    }
+    chrome.storage.local.set({
+        "BannerTotal": currentTotal + 1,
+    })
+}
 /**
  * RUNS CODE WHEN THE PAGE UPDATES
  */
@@ -19,6 +29,9 @@ chrome.tabs.onUpdated.addListener( async (id, changeInfo, tab) => {
             const success = result.some((frame) => Boolean(frame?.result));
             const output = success ? "Rejected" : "Failed";
             console.log("AutoReject ended in state: ", output);
+            if (success) {
+                UpdateBannerTotal(false);
+            }
         }
     });
 })

@@ -2,9 +2,9 @@
  * Deletes a specific tracker from storages (RUNS IN MAIN AND ISOLATED WORLDS)
  * @param {Object} storageObj - Imported local storage from site
  * @param {string} key - Tracker name to delete
- * @param {Bool} equals - Whether to match the key exactly or partially
- * @param {Bool} bin - Whether to store deleted tracker in bin
- * @returns {Bool} - If any deletions occurred
+ * @param {boolean} equals - Whether to match the key exactly or partially
+ * @param {boolean} bin - Whether to store deleted tracker in bin
+ * @returns {boolean} - If any deletions occurred
  */
 export function purgeTracker(storageObj, key, equals = false, bin = true) {
     try {
@@ -57,14 +57,14 @@ export function purgeTracker(storageObj, key, equals = false, bin = true) {
  * //Scans a specific tracker to see if its present in recycling bin (RUNS IN MAIN WORLD)
  * @param {string} key - Tracker name to delete
  * @param {Object} storageObj - Imported local storage from site, not required if no deletion required
- * @returns {Promise<Bool>}
+ * @returns {Promise<boolean>}
  */
 export async function scanTracker(key, storageObj = null) {
     try {
         const status = await new Promise((callback) => {
             //Receives status of checked tracker name
             const listenerName = "BLACKLIST_STATUS_TO_MAIN";
-            window.addEventListener(listenerName, function handler(event){
+            window.addEventListener(listenerName,new function handler(event){
                 if (event.detail?.key === key) {
                     window.removeEventListener(listenerName, handler);
                     callback(Number(event.detail.status));
