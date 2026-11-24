@@ -1,0 +1,13 @@
+{
+  "name": "knowchip-banner-sites",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Standalone local consent-banner fixtures for the KnowChip extension",
+  "engines": { "node": ">=22" },
+  "scripts": {
+    "start": "node server.js",
+    "start:https": "node server.js --https",
+    "test": "node --test tests/*.test.js"
+  }
+}
