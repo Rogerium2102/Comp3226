@@ -1,5 +1,6 @@
 import {insertAutoRejectScript, insertFileInCurrentTab, insertCommsScript} from "./tabWorker.js"
 import { store, checkBin, checkBlacklist, enterBlacklist } from "../deletion/recyclingBin.js";
+import { rateLimiter, rateLimiterMaster } from "../deletion/deleterInExtWrld.js";
 
 console.log("Cookie rejected\nEverything's fine. Don't worry.");
 
@@ -38,6 +39,11 @@ chrome.tabs.onUpdated.addListener( async (id, changeInfo, tab) => {
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     switch (message.type) {
+        case "REQUEST_DELETION_APPROVAL": //Calls the rate limiter to ensure no deletion overload
+            const passed = rateLimiter(message.key);
+            sendResponse({success: passed});
+            break; //No need to return to keep channel open: reply send synchronously
+
         case "DELETED_TRACKERS_TO_EXTENSION": //Receives deleted trackers from ISOLATED world (comms.js) and stores them in the recycling bin
             (async () => {
                 let failCount = 0;
@@ -71,3 +77,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
             break;
     }
 });
+
+
+rateLimiterMaster(); //Starts rate limiter

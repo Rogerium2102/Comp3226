@@ -50,6 +50,8 @@ async function batchHandle(cookies, isWiping) {
  */
 export async function purgeCookie(cookie) {
     try {
+        if (!rateLimiter([cookie.name, cookie.domain])) return false; //Rate limited
+
         //Constructs separate cookie, prevents sending out unnecessary user details
         const cookieDetails = {
             name: cookie.name,
@@ -84,6 +86,8 @@ export async function purgeCookie(cookie) {
  */
 export async function wipeCookie(cookie) {
     try {
+        if (!rateLimiter([cookie.name, cookie.domain])) return false;
+
         let cookieDetails = {...cookie}; //Creates shallow copy of cookie for editing
         getURL(cookieDetails);
         cookieDetails.value = "0"; //Wipes tracking value with truthy value
@@ -115,6 +119,8 @@ export async function wipeCookie(cookie) {
  */
 export async function requestTrackerDeletion(key, equals = true, blacklist = true) {
     try {
+        if (!rateLimiter(key)) return false;
+
         const success = await messageIsolated("REQUEST_DELETION_TO_ISOLATED", {
             datatype: "tracker",
             key: key,
@@ -156,4 +162,46 @@ export async function messageIsolated(code, content = {}) {
         console.log(`Failed to send ${code} with content: ${content}, to tabWorker.js: `, err);
         return false;
     }
+}
+
+
+let holder = {} //Dict{key : quantity} //Holds deleted keys and times deleted to check for repeated deletions
+let limitCalmer = null; //Interval to calm the rate limiter down to decrement values to prevent valid deletions from being forbidden
+const limitNum = 10; //Max limit until blocking repeated deletions
+const calmRate = 1000; //ms between
+
+/**
+ * Inputs a deletion and checks if it can be approved or needs to be denied
+ * @param {List | string} deletedObj - Unique identifying data input as either as a string or as a list of unique fields
+ * @returns {Bool} - Success flag
+ */
+export function rateLimiter(deletedObj) {
+    if (!holder) holder = {};
+
+    const key = typeof deletedObj === "string" ? deletedObj : deletedObj.join('-'); //Packs input data into unique string key
+
+    const recentDeletions = holder[key] ?? 0; //If value not found with key, defaults to 0 occurances
+    if (recentDeletions > limitNum) {
+        return false;
+    } else {
+        holder[key] = recentDeletions + 1;
+        return true;
+    }
+}
+
+/**
+ * Handles rate limiter by decrementing entries and printing statuses
+ * Needs to be called in background.js to establish listeners
+ * Creates a continous polling interval
+ */
+export function rateLimiterMaster() {
+    if (!holder) holder = {};
+    if (limitCalmer !== null) return; //Don't create duplicate intervals
+
+    limitCalmer = setInterval(() => {
+        for (const key in holder) {
+            holder[key] = holder[key] - 1;
+            if (holder[key] <= 0) delete holder[key]; //Cleans empty keys
+        }
+    }, calmRate);
 }

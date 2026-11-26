@@ -189,7 +189,7 @@ export async function insertCommsScript() {
 
         });
 
-        //Fired by purgeTracker from storageDeleter.js, passes deleted tracker key to extension world
+        //Fired by purgeTracker from deleterInMainWrld.js, passes deleted tracker key to extension world
         //Passes it to background.js
         window.addEventListener("DELETED_TRACKERS_TO_ISOLATED", async (event) => {
             const deletedTrackers = event.detail.trackers;
@@ -199,7 +199,7 @@ export async function insertCommsScript() {
             });
         });
 
-        //Fired by scanTracker from storageDeleter.js
+        //Fired by scanTracker from deleterInMainWrld.js
         //Passes it to background.js for response
         //Sends response back to INJECTED world
         window.addEventListener("CHECK_TRACKER_TO_ISOLATED", async (event) => {
