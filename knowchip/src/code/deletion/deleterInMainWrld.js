@@ -1,12 +1,13 @@
 /**
  * Deletes a specific tracker from storages (RUNS IN MAIN AND ISOLATED WORLDS)
  * @param {Object} storageObj - Imported local storage from site
+ * @param {Bool} isSessionStorage - Whether the storage is session or local storage
  * @param {string} key - Tracker name to delete
  * @param {boolean} equals - Whether to match the key exactly or partially
  * @param {boolean} bin - Whether to store deleted tracker in bin
  * @returns {boolean} - If any deletions occurred
  */
-export function purgeTracker(storageObj, key, equals = false, bin = true) {
+export function purgeTracker(storageObj, isSessionStorage, key, equals = false, bin = true) {
     try {
         //Validate storage object
         if (!storageObj || typeof storageObj.removeItem !== 'function') {
@@ -15,25 +16,28 @@ export function purgeTracker(storageObj, key, equals = false, bin = true) {
         }
 
         //Finds trackers in storage
-        let searchKeys = [];
+        let searchTrackers = []; //List[Dict]
         if (equals) {
-            if (storageObj.getItem(key) !== null) searchKeys = [key]; //Only adds tracker if storage contains it
+            //Only adds tracker if storage contains it
+            const item = storageObj.getItem(key);
+            if (item !== null) searchTrackers = [{"key" : key, "value" : item, "storeType" : isSessionStorage}];
         } else {
             for (let i = 0; i < storageObj.length; i++) { //Searches all items in storage
                 const k = storageObj.key(i);
-                if (k && k.includes(key)) searchKeys.push(k); //Adds scanned object if it contains the key
+                //Adds scanned object if it contains the key
+                if (k && k.includes(key)) searchTrackers.push({"key" : k, "value" : storageObj.getItem(k), "storeType" : isSessionStorage});
             }
         }
 
         //Exits is no found trackers
-        if (searchKeys.length < 1) {
+        if (searchTrackers.length < 1) {
             console.log(`No trackers found ${equals ? "matching" : "containing"} ${key}`);
             return false;
         }
 
         //Removes object from storage
-        for (const k of searchKeys) {
-            storageObj.removeItem(k); //RemoveItem is synchronous so no need to await it
+        for (const t of searchTrackers) {
+            storageObj.removeItem(t.key); //RemoveItem is synchronous so no need to await it
         }
         //Fires event to add tracker to bin
         if (bin) {
@@ -41,7 +45,7 @@ export function purgeTracker(storageObj, key, equals = false, bin = true) {
             //This passes it to comms.js which is in ISOLATED world
             window.dispatchEvent(
                 new CustomEvent("DELETED_TRACKERS_TO_ISOLATED", {
-                    detail: { keys: searchKeys }
+                    detail: { trackers: searchTrackers }
                 })
             );
         }
@@ -57,9 +61,10 @@ export function purgeTracker(storageObj, key, equals = false, bin = true) {
  * //Scans a specific tracker to see if its present in recycling bin (RUNS IN MAIN WORLD)
  * @param {string} key - Tracker name to delete
  * @param {Object} storageObj - Imported local storage from site, not required if no deletion required
+ * @param {Bool} isSessionStorage - Whether the storage is session or local storage
  * @returns {Promise<boolean>}
  */
-export async function scanTracker(key, storageObj = null) {
+export async function scanTracker(key, storageObj = null, isSessionStorage = true) {
     try {
         const status = await new Promise((callback) => {
             //Receives status of checked tracker name
@@ -84,9 +89,9 @@ export async function scanTracker(key, storageObj = null) {
                 case 0: //No match
                     return false;
                 case 1: //Match in recycling bin
-                    return purgeTracker(storageObj, key, true, false);
+                    return purgeTracker(storageObj, isSessionStorage, key, true, false);
                 case 2: //Match in blacklist
-                    return purgeTracker(storageObj, key, true, true); //Places tracker in bin
+                    return purgeTracker(storageObj, isSessionStorage, key, true, true); //Places tracker in bin
                 default:
                     console.error(`Incorrect status (${status}) return from ${key}`);
                     return false;

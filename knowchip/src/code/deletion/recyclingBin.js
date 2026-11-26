@@ -1,6 +1,6 @@
 //The recycling bin stores deleted cookies and ensures they don't reappear
 
-import { purgeCookie, wipeCookie } from "./deleterInExtWrld.js";
+import { purgeCookie, wipeCookie, messageIsolated } from "./deleterInExtWrld.js";
 
 //Exported functions
 
@@ -33,12 +33,13 @@ export async function getTrackers() {
 
 /**
  * Regenerates a deleted cookie/tracker
- * @param {String} idx - Index of the cookie/tracker to be regenerated
+ * @param {Number} idx - Index of the cookie/tracker to be regenerated
  * @param {Bool} isCookie - Whether a cookie or a tracker needs to be regened
  * @param {Bool} wiped - Whether the cookie is from the wipe bin or delete bin
  * @returns {Promise<Bool>} - If cookie/tracker was successfully revived
  */
 export async function regen(idx, isCookie, wiped = false) {
+    await loadBins();
     try {
         const entry = await get(idx, isCookie, wiped, false); //Doesn't delete cookie until regen success
         if (!entry) {
@@ -46,19 +47,18 @@ export async function regen(idx, isCookie, wiped = false) {
             return false;
         }
 
+        const { key, selectedBin } = getKeys(isCookie, wiped);
+        await removeEntry(idx, key, selectedBin); //Removes entry from bin to prevent it from being auto deleted again
+
         if (isCookie) {
             if (!entry.url) getURL(entry); //Cookies are required to be set with a URL
             cleanCookie(entry);
-            await chrome.cookies.set(entry);
+            return Boolean(await chrome.cookies.set(entry)); //Returns status of cookie set
         } else {
-            console.error(`Regenerating trackers not implemented`);
-            return false
+            //Sends response through tabWorker -> deleterInMainWrld
+            return await messageIsolated("REQUEST_ADDITION_TO_ISOLATED", entry);
+            //If response is false then the tracker would be permanently lost in this method
         }
-
-        const { key, selectedBin } = getKeys(isCookie, wiped);
-        await removeEntry(idx, key, selectedBin); //Deletes cookie from bin only after success
-
-        return true;
     } catch (err) {
         console.error(`Error regenerating cookie/tracker at index ${idx}: ${err}`);
         return false;
@@ -134,7 +134,7 @@ export async function enterBlacklist(key, exact, enforce = false){
 
 /**
  * Stores a cookie/tracker that has been deleted
- * @param {chrome.cookies.Cookie | String} entry
+ * @param {Dict} entry
  * @param {Bool} wiped - Not applicable to tracker entries, whether the cookie was wiped rather than deleted
  * @returns {Promise<int>} - Index of the stored cookie, with a failure value of -1
  */
@@ -142,8 +142,8 @@ export async function store(entry, wiped = false) {
     let isCookie; //Bool
     let name; //String //Error output
     try {
-        isCookie = !(typeof entry === "string");
-        name = isCookie ? entry.name : entry;
+        isCookie = Boolean(entry.name) && Boolean(entry.path); //Picked two fields that cookies should always have and trackers wouldn't
+        name = isCookie ? entry.name : entry.key;
     } catch (err) {
         console.error(`Invalid entry input to store: ${err}`);
         return -1;
@@ -185,7 +185,7 @@ export async function binSize(isCookie, wiped = false) {
  * @param {Bool} isCookie - Whether a cookie or a tracker needs to be grabbed
  * @param {Bool} wiped - Whether the cookie is from the wipe bin or delete bin
  * @param {Bool} del - Whether to delete the cookie/tracker after fetching it
- * @returns {Promise<chrome.cookies.Cookie | null>} - Cookie object or null if not found
+ * @returns {Promise<Dict>} - Cookie/Tracker object or null if not found
  */
 export async function get(idx, isCookie, wiped = false, del = false) {
     //Loads bins from local storage if they haven't been loaded yet
@@ -198,7 +198,7 @@ export async function get(idx, isCookie, wiped = false, del = false) {
             return null;
         }
 
-        let entry = null; //Cookie|String|Null //Fetch cookie/tracker by index
+        let entry = null; //Dict|Null //Fetch cookie/tracker by index
         
         //Check both bins for the cookie
         if (idx < selectedBin.length) entry = selectedBin[idx];
@@ -238,7 +238,7 @@ export async function checkBin(entry) {
     try {
         if (typeof entry === "string") {
             //Tracker
-            if (trackerBin.some(t => t === entry)) return { match : true, func : null }; //Func is null in lieu of tracking deletion function
+            if (trackerBin.some(t => t.key === entry)) return { match : true, func : null }; //Func is null in lieu of tracking deletion function
             else return { match : false, func : null }; 
         } else {
             //Cookies
@@ -314,8 +314,13 @@ export function cleanCookie(cookie) {
 
 let deleteBin = null //List[Cookie] //Recycling bin for deleted cookies
 let wipeBin = null //List[Cookie] //Recycling bin for wiped cookies
-let trackerBin = null //List[String] //Recycling bin for deleted tracker keys (there's no point in wiping trackers)
-let blacklist = null //List[[String, Bool]] //Holds [tracker key, exact match]
+/**
+ * Recycling bin for deleted tracker keys
+ * No point in wiping trackers
+ * Holds: key : String (tracker key); value : String (tracker value); storeType : Bool (T: Session, F: Local)
+ */
+let trackerBin = null //List[Dict]
+let blacklist = null //List[[String, Bool]] //Holds: tracker key; exact match
 
 /**
  * Checks if a cookie matches another cookie
@@ -400,7 +405,7 @@ function getKeys(isCookie, wiped) {
  * Removes a cookie/tracker from memory and local storage
  * @param {int} idx
  * @param {string} key
- * @param {List[Cookie]} selectedBin
+ * @param {List[Dict]} selectedBin
  * @returns {Promise<Bool>} - Success flag
  */
 async function removeEntry(idx, key, selectedBin) {
@@ -414,3 +419,15 @@ async function removeEntry(idx, key, selectedBin) {
         return false;
     }
 }
+
+/**
+ * Background.js and popup.js both store different local bins but same local storage
+ * When one backs up to local storage, this detects it and updates the other
+ */
+chrome.storage.onChanged.addListener((changes, area) => {
+    if (area !== "local") return;
+    if (changes.deleteBin)  deleteBin  = changes.deleteBin.newValue  || []; //Default value to reset incase something goes wrong
+    if (changes.wipeBin)    wipeBin    = changes.wipeBin.newValue    || [];
+    if (changes.trackerBin) trackerBin = changes.trackerBin.newValue || [];
+    if (changes.blacklist)  blacklist  = changes.blacklist.newValue  || [];
+});

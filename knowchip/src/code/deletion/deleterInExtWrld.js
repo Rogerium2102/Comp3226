@@ -78,7 +78,7 @@ export async function purgeCookie(cookie) {
 }
 
 /**
- * //Wipes the value of a cookie to prevent it from tracking a user
+ * Wipes the value of a cookie to prevent it from tracking a user
  * @param {chrome.cookies.Cookie} cookie
  * @returns {Promise<Bool>}
  */
@@ -107,13 +107,38 @@ export async function wipeCookie(cookie) {
 }
 
 /**
- * //Deletes a specific tracker (HAS TO RUN IN EXTENSION WORLD)
+ * Deletes a specific tracker (HAS TO RUN IN EXTENSION WORLD)
  * @param {string} key - Tracker name to delete
  * @param {Bool} equals - Whether deleted trackers should be equal to or containing the input name
  * @param {Bool} blacklist - Whether deleted trackers should be inserted into the recycling bin
  * @returns {Promise<Bool>} - Success flag
  */
 export async function requestTrackerDeletion(key, equals = true, blacklist = true) {
+    try {
+        const success = await messageIsolated("REQUEST_DELETION_TO_ISOLATED", {
+            datatype: "tracker",
+            key: key,
+            strict: equals
+        });
+
+        if (success && blacklist) await enterBlacklist(key, equals);
+
+        return success; 
+    } catch (err) {
+        console.error(`Failed to delete tracker ${key}:`, err);
+        return false;
+    }
+}
+
+/**
+ * Passes a message to ISOLATED world
+ * Has to be received by tabWorker.js and passed to MAIN
+ * HAS TO RUN IN EXTENSION WORLD
+ * @param {string} code - Message code to identify message by tabWorker.js
+ * @param {Dict} content - Message content that is directly passed through
+ * @returns {Promise<Bool>} - Success flag
+ */
+export async function messageIsolated(code, content = {}) {
     try {
         //Fetches tab
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
@@ -123,20 +148,12 @@ export async function requestTrackerDeletion(key, equals = true, blacklist = tru
         }
 
         //Sends response through tabWorker -> deleterInMainWrld
-        const response = await chrome.tabs.sendMessage(tab.id, {
-            type: "REQUEST_DELETION_TO_ISOLATED",
-            datatype: "tracker",
-            key: key,
-            strict: equals
-        });
+        const payload = { ...content, type: code}; //Shallow copy of content with code added, prevents permanent mutation of content
+        const response = await chrome.tabs.sendMessage(tab.id, payload);
 
-        const success = Boolean(response?.success) //Boolean(undefined) = false
-
-        if (success && blacklist) await enterBlacklist(key, equals);
-
-        return success; 
+        return Boolean(response?.success) //Boolean(undefined) = false
     } catch (err) {
-        console.error(`Failed to delete tracker ${key}:`, err);
+        console.log(`Failed to send ${code} with content: ${content}, to tabWorker.js: `, err);
         return false;
     }
 }

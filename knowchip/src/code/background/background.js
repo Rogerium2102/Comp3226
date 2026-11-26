@@ -41,8 +41,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         case "DELETED_TRACKERS_TO_EXTENSION": //Receives deleted trackers from ISOLATED world (comms.js) and stores them in the recycling bin
             (async () => {
                 let failCount = 0;
-                for (const key of message.keys) {
-                    if ((await store(key)) < 0) failCount++;
+                for (const t of message.trackers) {
+                    if ((await store(t)) < 0) failCount++;
                 }
                 if (failCount > 0) console.error(`Storing trackers failed ${failCount} times`);
 

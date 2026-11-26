@@ -114,7 +114,7 @@ import { purgeTracker, scanTracker } from "./deletion/deleterInMainWrld";
                 const key = storage.key(i);
                 const value = storage.getItem(key);
                 if (!await fireSuspiciousStorageEvent(type, 'existingScan', key, value)) {
-                    const response = await purgeTracker(storage, key, true, false); //Deletes a found tracker without storing it
+                    const response = await purgeTracker(storage, type === 'sessionStorage', key, true, true); //Deletes a found tracker without storing it
                     if (response) i--; //Decrements back as for loop is amended by deletion
                 }
             }
@@ -132,14 +132,34 @@ ${error.message}`);
     window.addEventListener("DELETE_TRACKER_TO_MAIN", (event) => {
         const { key, strict } = event.detail;
         //Deletes trackers from both storages
-        const deletedLocal = purgeTracker(window.localStorage, key, strict, false);
-        const deletedSession = purgeTracker(window.sessionStorage, key, strict, false);
+        const deletedLocal = purgeTracker(window.localStorage, false, key, strict, false);
+        const deletedSession = purgeTracker(window.sessionStorage, true, key, strict, false);
         window.dispatchEvent(
             new CustomEvent("DELETION_STATUS_TO_ISOLATED", {
                 detail: {
                     datatype: "tracker",
                     success: deletedLocal || deletedSession //Deletion occurred in either
                 }
+            })
+        );
+    });
+    //Adds data back to storage
+    window.addEventListener("ADD_TO_MAIN", async (event) => {
+        const { key, value, storeType } = event.detail;
+
+        let success = false; //Bool
+        try {
+            const storage = storeType ? window.sessionStorage : window.localStorage;
+            await storage.setItem(key, value); //Setting is async with proxy
+            success = storage.getItem(key) !== null; //Success if entry can be found again
+        } catch (err) {
+            console.error(`Failed to add ${key} : ${value} to ${storeType ? "session" : "local"} storage: `, err);
+        }
+
+        //Sends success flag back to recyclingBin.js
+        window.dispatchEvent(
+            new CustomEvent("ADDITION_STATUS_TO_ISOLATED", {
+                detail: { success }
             })
         );
     });

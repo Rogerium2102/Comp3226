@@ -130,14 +130,14 @@ export async function insertCommsScript() {
             switch (message.type) {
                 case "REQUEST_DELETION_TO_ISOLATED":
                     //Creates listener for status response from MAIN
-                    const listenerName = "DELETION_STATUS_TO_ISOLATED";
-                    function handler(event) { //Needs to be accessed by default statement below
+                    const deletionListener = "DELETION_STATUS_TO_ISOLATED";
+                    function deleteHandler(event) { //Needs to be accessed by default statement below
                         if (event.detail?.datatype === message.datatype) {
-                            window.removeEventListener(listenerName, handler);
+                            window.removeEventListener(deletionListener, deleteHandler);
                             sendResponse({ success: Boolean(event.detail.success) });
                         }
                     }
-                    window.addEventListener(listenerName, handler);
+                    window.addEventListener(deletionListener, deleteHandler);
 
                     switch (message?.datatype) {
                         //Fired by requestTrackerDeletion from deleterInExtWrld.js
@@ -155,11 +155,34 @@ export async function insertCommsScript() {
                             return true; //Keeps channel open
 
                         default:
-                            console.error("Malformed message.datatype entered");
-                            window.removeEventListener(listenerName, handler);
+                            console.error("Malformed message.datatype entered for deletion");
+                            window.removeEventListener(deletionListener, deleteHandler);
                             return false;
                     }
+                
+                case "REQUEST_ADDITION_TO_ISOLATED":
+                    //Creates listener for status response from MAIN
+                    const additionListener = "ADDITION_STATUS_TO_ISOLATED";
+                    function additionHandler(event) {
+                        window.removeEventListener(additionListener, additionHandler);
+                        sendResponse({ success: Boolean(event.detail.success) });
+                    }
+                    window.addEventListener(additionListener, additionHandler);
 
+                    //Fired by regen from recyclingBin.js
+                    //Sends data to injected.js
+                    //Listens to MAIN for status response
+                    window.dispatchEvent(
+                        new CustomEvent("ADD_TO_MAIN", {
+                            detail: {
+                                key: message.key,
+                                value: message.value,
+                                storeType: message.storeType
+                            }
+                        })
+                    );
+
+                    return true;
                 default:
                     break;
             }
@@ -169,10 +192,10 @@ export async function insertCommsScript() {
         //Fired by purgeTracker from storageDeleter.js, passes deleted tracker key to extension world
         //Passes it to background.js
         window.addEventListener("DELETED_TRACKERS_TO_ISOLATED", async (event) => {
-            const deletedTrackerKeys = event.detail.keys;
+            const deletedTrackers = event.detail.trackers;
             chrome.runtime.sendMessage({
                 type: "DELETED_TRACKERS_TO_EXTENSION",
-                keys: deletedTrackerKeys
+                trackers: deletedTrackers
             });
         });
 
