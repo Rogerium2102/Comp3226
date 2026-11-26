@@ -7,11 +7,21 @@ export function CookiePage({ onBack }){
     const [cookies,setCookies] = useState([]);
     const [expandedKey, setExpandedKey] = useState("");
     const [open, setOpen] = useState(false);
+    const [selectedDomain, setSelectedDomain] = useState("all");
+
+    const domains = [...new Set(cookies.map((c) => c.domain))].filter(Boolean);
+
+    const filteredCookies = selectedDomain === "all" ? cookies : cookies.filter((c) => c.domain === selectedDomain);
     async function loadCookies(){
       console.log("reloading cookies")
       await invalidateCache()
       const data = await getAllCookies()
       setCookies(data || [])
+      for(const cookie of cookies){
+        if(!domains.includes(cookie.domain)){
+          domains.push(cookie.domain)
+        }
+      }
     }
     useEffect (() =>{
       loadCookies()
@@ -65,8 +75,7 @@ export function CookiePage({ onBack }){
                         </tbody>
                     </table>
                     <div className="flex gap-3">
-                    <button type="button" className="bg-red-400 text-white w-7 h-7 rounded items-center justify-center inline-flex" 
-                    onClick={()=> {purgeCookies(cookies); loadCookies()}}>
+                    <button type="button" className="bg-red-400 text-white w-7 h-7 rounded items-center justify-center inline-flex" >
                       <img src="/bin.png" alt={"bin"} className="w-6 h-auto block"></img>
                     </button>    
                     <button type="button" className=" bg-red-400 image-button rounded w-7 h-7 items-center justify-center inline-flex">
@@ -92,9 +101,31 @@ export function CookiePage({ onBack }){
                 <img src="/refresh.png" alt={"refresh"} className="w-6 h-auto block"></img>
               </button>
               <button type="button" className="bg-red-400 text-white w-7 h-7 cursor-pointer rounded hover:bg-red-500 items-center justify-center inline-flex" 
-              onClick={()=> {purgeCookies(cookies); loadCookies()}}>
+              onClick={()=> {purgeCookies(filteredCookies.filter((c) => !c.session)); loadCookies()}}>
                 <img src="/bin.png" alt={"bin"} className="w-6 h-auto block"></img>
               </button>
+          <div>
+          <div className="space-x-2">
+            <label htmlFor="domains" className="text-sm font-medium text-gray-700 dark:text-gray-300">
+              Domain:
+            </label>
+            <select 
+              id="domains"
+              value={selectedDomain}
+              onChange={(e) => setSelectedDomain(e.target.value)}
+              className="bg-white text-gray-800 border border-gray-300 rounded px-2 py-1 text-sm cursor-pointer shadow-sm"
+            >
+              <option value="all">All Domains ({domains.length})</option>
+              {domains.map((domain) => (
+                <option key={domain} value={domain}>
+                  {domain}
+                </option>
+              ))}
+            </select>
+
+            
+          </div>
+          </div>
           <div className="text-center">
             <div className="overflow-x-auto border border-gray-200 rounded-lg shadow-sm">
               <table className="w-full divide-y divide-gray-200 text-sm text-left py-2">
@@ -108,14 +139,14 @@ export function CookiePage({ onBack }){
                   </tr>
                 </thead>
                   <tbody className="divide-y divide-gray-200 bg-white">
-                  {cookies.length === 0 ? (
+                  {filteredCookies.length === 0 ? (
                     <tr onClick={()=> {}}>
                       <td colSpan={6} className="px-2 py-6 text-center text-gray-400 italic">
                         No cookies found.
                       </td>
                     </tr>
                 ) : (
-                cookies.map((cookie, idx) => {
+                filteredCookies.map((cookie, idx) => {
                 const cookieKey = `${cookie.domain}-${cookie.name}-${idx}`;
                 const isExpanded = expandedKey === cookieKey
 
