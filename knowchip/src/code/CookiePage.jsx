@@ -20,8 +20,8 @@ export function CookiePage({ onBack }){
     console.log(cookies)
     return(
       <div className="container px-2 py-6 mx-auto">
-        <button className="bg-gray-200 text-white w-7 h-7 rounded hover:bg-gray-300 cursor-pointer items-center justify-center inline-flex"
-              type="button" onClick={() => onBack('home')}>
+        <button className="bg-gray-200 w-7 h-7 rounded hover:bg-gray-300 cursor-pointer items-center justify-center inline-flex"
+              type="button" onClick={() => onBack()}>
                 <img src="/back.png" alt={"back"} className="w-6 h-auto block"></img>
         </button>
         <div className="text-center">

@@ -1,1 +1,41 @@
 @import 'tailwindcss';
+
+@custom-variant dark (&:where(.dark, .dark *));
+/* Global dark-mode flips - flips everything without changing JSX */
+.dark {
+  color-scheme: dark;
+}
+/* Invert hardcoded whites and light grays */
+.dark .bg-white {
+  background-color: #1e293b !important; 
+}
+.dark .bg-gray-50 {
+  background-color: #0f172a !important; 
+}
+.dark .bg-gray-100,
+.dark .bg-gray-200 {
+  background-color: #334155 !important; 
+}
+.dark .text-black,
+.dark .text-gray-800,
+.dark .text-gray-700 {
+  color: #f8fafc !important; 
+}
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-400 {
+  color: #aeb7c3 !important; 
+}
+
+.dark .border-gray-200,
+.dark .divide-gray-200 > :not([hidden]) ~ :not([hidden]) {
+  border-color: #334155 !important;
+}
+
+.dark .hover\:bg-gray-50:hover {
+  background-color: #475b78 !important;
+}
+
+.dark .hover\:bg-gray-300:hover {
+    background-color: #677c9c !important;
+}
