@@ -1,27 +1,28 @@
-import { dumpCookies } from "./popup";
-import { getAllStorageFromTabs } from "./Storage/SessionHandler";
-import { useEffect } from "react";
+import {Settings, Cookie, ShieldCheck} from "lucide-react";
+import logo from "../assets/CookieLogo.png"
 
 export function HomePage({ onNavigate }){
-  useEffect(() => {
-    async function bs(){
-      let storage = await getAllStorageFromTabs()
-      console.log(" THIS IS THE STORAGE PLUH")
-      console.log(storage) 
-    }
-    bs()}
-  ,[])
     return(
-    <div className='px-4 py-4 bg-gray-50 rounded-lg shadow-md font-sans justify-center flex items-center flex-col'>
-      <button className="bg-gray-200 text-white w-7 h-7 rounded hover:bg-gray-300 cursor-pointer items-center justify-center inline-flex"
-        type="button" onClick={()=> {onNavigate('settings')}}>
-        <img src="/settings.png" alt={"settings"} className="w-6 h-auto block"></img> 
-        </button>
-      <h2 className='text-xl font-bold mb-2 text-gray-800'>Home Page</h2>
-      <div> 
-        <button className='bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600'
-        onClick={() => onNavigate('cookies')}> View Cookies </button>
-      </div>
-    </div>
+        <div className="w-[380px bg-zinc-950 text-zinc-100 p-4 font-sans flex flex-col gap-3.5 select-none">
+            {/* Header */}
+            <header className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                        <ShieldCheck className="w-4 h-4"/>
+                    </div>
+                    <div>
+                        <h1 className="text-sm font-semibold tracking-tight text-zinc-100 leading-none inline-flex items-center">
+                            <span>kn</span>
+                            <img
+                                src={logo}
+                                alt="o"
+                                className="w-3.5 h-3.5 mx-[0.5px] inline-block object-contain"
+                            />
+                            <span>wchip</span>
+                        </h1>
+                    </div>
+                </div>
+            </header>
+        </div>
     );
 }

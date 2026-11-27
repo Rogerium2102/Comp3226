@@ -1,0 +1,439 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="ac7e56c2-f0c3-4bc5-a71e-a1d4827d19bc" name="Changes" comment="Stop commiting to main">
+      <change beforePath="$PROJECT_DIR$/knowchip/build/assets/main-CIr8PclR.css" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowchip/build/assets/main-WlL95H8L.js" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowchip/build/background.js" beforeDir="false" afterPath="$PROJECT_DIR$/knowchip/build/background.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowchip/build/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/knowchip/build/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowchip/build/injected.js" beforeDir="false" afterPath="$PROJECT_DIR$/knowchip/build/injected.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowchip/src/code/HomePage.jsx" beforeDir="false" afterPath="$PROJECT_DIR$/knowchip/src/code/HomePage.jsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/knowchip/vite.config.ts" beforeDir="false" afterPath="$PROJECT_DIR$/knowchip/vite.config.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="package.json" />
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <excluded-from-favorite>
+      <branch-storage>
+        <map>
+          <entry type="LOCAL">
+            <value>
+              <list>
+                <branch-info repo="$PROJECT_DIR$" source="main" />
+              </list>
+            </value>
+          </entry>
+        </map>
+      </branch-storage>
+    </excluded-from-favorite>
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="main" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {}
+}</component>
+  <component name="GitHubPullRequestState">{}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/Rogerium2102/Comp3226&quot;,
+    &quot;accountId&quot;: &quot;7064e2b8-8717-4459-aceb-e151206c210e&quot;
+  }
+}</component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.0" />
+      <entry key="MS500" value="1.0" />
+      <entry key="S2" value="1.0000750281834994" />
+      <entry key="S5" value="1.0550739996264549" />
+      <entry key="S10" value="1.6960364302715054" />
+      <entry key="S30" value="5.674228964046884" />
+      <entry key="S60" value="9.469033501310069" />
+      <entry key="M2" value="14.585092761007056" />
+      <entry key="M5" value="22.98424708596038" />
+      <entry key="M10" value="29.23630996168429" />
+      <entry key="M15" value="33.8684350161819" />
+      <entry key="M30" value="50.412501394487684" />
+      <entry key="H1" value="112.58375182874703" />
+      <entry key="H2" value="324.61803311229977" />
+      <entry key="H4" value="790.4090309923968" />
+      <entry key="D1" value="2139.537604785656" />
+      <entry key="W1" value="2599.484560043935" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="5.175970889732327E-58" />
+      <entry key="MS500" value="3.495235049957548E-12" />
+      <entry key="S2" value="0.0016385563660246448" />
+      <entry key="S5" value="0.11004534094442267" />
+      <entry key="S10" value="0.5007109091576336" />
+      <entry key="S30" value="1.8668852455659433" />
+      <entry key="S60" value="3.187716903255896" />
+      <entry key="M2" value="4.930692893145359" />
+      <entry key="M5" value="7.451014337901989" />
+      <entry key="M10" value="9.270317926791705" />
+      <entry key="M15" value="10.90013886368861" />
+      <entry key="M30" value="16.534991188144488" />
+      <entry key="H1" value="30.061922708185396" />
+      <entry key="H2" value="62.69026136987486" />
+      <entry key="H4" value="122.24972982064743" />
+      <entry key="D1" value="273.909803641094" />
+      <entry key="W1" value="322.7958861620043" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.0567546601188081E-5" />
+      <entry key="MS500" value="0.10111016854525" />
+      <entry key="S2" value="0.564473326703851" />
+      <entry key="S5" value="0.9113162294446459" />
+      <entry key="S10" value="1.9329934087345566" />
+      <entry key="S30" value="7.251653343296683" />
+      <entry key="S60" value="12.41598781339712" />
+      <entry key="M2" value="19.33345200016812" />
+      <entry key="M5" value="30.323552407199983" />
+      <entry key="M10" value="38.4350684983513" />
+      <entry key="M15" value="44.711209153108534" />
+      <entry key="M30" value="66.90351534974602" />
+      <entry key="H1" value="142.60831166068718" />
+      <entry key="H2" value="387.2714538580623" />
+      <entry key="H4" value="912.622239175531" />
+      <entry key="D1" value="2413.4329252043053" />
+      <entry key="W1" value="2922.277974575197" />
+    </decayedShown>
+  </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 1,
+  &quot;fromUser&quot;: false
+}</component>
+  <component name="ProjectId" id="3L5lze0hGD350IIL9xHOZhUUH0C" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "JavaScript Debug.popup.html.executor": "Run",
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "Node.js.background.js.executor": "Run",
+    "Node.js.popup.js.executor": "Run",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "git-widget-placeholder": "home",
+    "javascript.preferred.runtime.type.id": "node",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/Matth/Documents/Gitlab/JS/Comp3226",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.jshint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.jshint": "",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "npm.build.executor": "Run",
+    "npm.dev.executor": "Run",
+    "npm.preview.executor": "Run",
+    "python.packages.toolwindow.project.migrated.to.right.top.v2": "true",
+    "settings.editor.selected.configurable": "JavaScript.Libraries",
+    "ts.external.directory.path": "C:\\Users\\Matth\\Documents\\Gitlab\\JS\\Comp3226\\knowchip\\node_modules\\typescript\\lib"
+  }
+}]]></component>
+  <component name="ReactDesignerToolWindowState">
+    <option name="myId2Visible">
+      <map>
+        <entry key="com.intellij.reactbuddy.reactComponents" value="false" />
+        <entry key="com.intellij.reactbuddy.reactInspector" value="false" />
+        <entry key="com.intellij.reactbuddy.storybook" value="false" />
+      </map>
+    </option>
+  </component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Matth\Documents\Gitlab\JS\Comp3226\knowchip\src\code" />
+      <recent name="C:\Users\Matth\Documents\Gitlab\JS\Comp3226\Storage" />
+    </key>
+  </component>
+  <component name="RunManager" selected="npm.build">
+    <configuration name="build" type="js.build_tools.npm" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/knowchip/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="build" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="build" type="js.build_tools.npm" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="build" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="dev" type="js.build_tools.npm" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/knowchip/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="dev" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <configuration name="preview" type="js.build_tools.npm" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/knowchip/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="preview" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <list>
+      <item itemvalue="npm.build" />
+      <item itemvalue="npm.dev" />
+      <item itemvalue="npm.preview" />
+    </list>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-56aff7b04f6f-JavaScript-WS-263.7307.348" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="ac7e56c2-f0c3-4bc5-a71e-a1d4827d19bc" name="Changes" comment="" />
+      <created>1792752073241</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1792752073241</updated>
+      <workItem from="1793032414689" duration="136000" />
+      <workItem from="1793032575143" duration="60000" />
+      <workItem from="1793721689978" duration="3471000" />
+      <workItem from="1793962455633" duration="2212000" />
+      <workItem from="1793966514408" duration="17000" />
+      <workItem from="1793968638271" duration="1258000" />
+      <workItem from="1793970567868" duration="893000" />
+      <workItem from="1793971670268" duration="1380000" />
+      <workItem from="1794163180876" duration="3280000" />
+      <workItem from="1794166854365" duration="487000" />
+      <workItem from="1794311939231" duration="1892000" />
+      <workItem from="1794326425979" duration="3864000" />
+      <workItem from="1794426836209" duration="5327000" />
+      <workItem from="1794926341466" duration="960000" />
+      <workItem from="1794927342639" duration="3645000" />
+      <workItem from="1794931503697" duration="4431000" />
+      <workItem from="1794948096627" duration="7914000" />
+      <workItem from="1795360666198" duration="4253000" />
+      <workItem from="1795375514625" duration="1418000" />
+      <workItem from="1795381669894" duration="2786000" />
+      <workItem from="1795536116769" duration="6181000" />
+      <workItem from="1795777691849" duration="32000" />
+      <workItem from="1795777850320" duration="5403000" />
+    </task>
+    <task id="LOCAL-00001" summary="Created injected.js, when placed on a page, this can essential reroute all calls to certain functions through our functions instead.">
+      <option name="closed" value="true" />
+      <created>1794166372142</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1794166372142</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Updated Vite config to copy necessary files for Chrome extension">
+      <option name="closed" value="true" />
+      <created>1794313828776</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1794313828776</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Merge conflict">
+      <option name="closed" value="true" />
+      <created>1794327247671</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1794327247671</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Merge conflict">
+      <option name="closed" value="true" />
+      <created>1794327498964</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1794327498964</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Cookie banner finding and cookie banner auto rejection (in theory)">
+      <option name="closed" value="true" />
+      <created>1794432149389</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1794432149389</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Cookie worker and fixing background worker">
+      <option name="closed" value="true" />
+      <created>1794930998050</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1794930998051</updated>
+    </task>
+    <task id="LOCAL-00007" summary="Same as last commit">
+      <option name="closed" value="true" />
+      <created>1794932106408</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1794932106408</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Fixing merge issues">
+      <option name="closed" value="true" />
+      <created>1794932990650</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1794932990650</updated>
+    </task>
+    <task id="LOCAL-00009" summary="CookieHandler cookie expiry invalidate function">
+      <option name="closed" value="true" />
+      <created>1794934876800</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1794934876800</updated>
+    </task>
+    <task id="LOCAL-00010" summary="BannerHandler.js can now detect and automatically reject a cookie banner by clicking reject all.">
+      <option name="closed" value="true" />
+      <created>1794956063638</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1794956063638</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Cookie banner script improvements and general injection">
+      <option name="closed" value="true" />
+      <created>1795362732368</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1795362732368</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Commit message">
+      <option name="closed" value="true" />
+      <created>1795364508786</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1795364508786</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Assorted fixes">
+      <option name="closed" value="true" />
+      <created>1795381925131</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1795381925131</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Assorted fixes">
+      <option name="closed" value="true" />
+      <created>1795382622886</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1795382622886</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Banner counting and assorted fixes">
+      <option name="closed" value="true" />
+      <created>1795538994697</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1795538994697</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Added new keyword and removed warnings">
+      <option name="closed" value="true" />
+      <created>1795539543731</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1795539543731</updated>
+    </task>
+    <task id="LOCAL-00017" summary="Stop commiting to main">
+      <option name="closed" value="true" />
+      <created>1795540312830</created>
+      <option name="number" value="00017" />
+      <option name="presentableId" value="LOCAL-00017" />
+      <option name="project" value="LOCAL" />
+      <updated>1795540312830</updated>
+    </task>
+    <option name="localTasksCounter" value="18" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="Created injected.js, when placed on a page, this can essential reroute all calls to certain functions through our functions instead." />
+    <MESSAGE value="Updated Vite config to copy necessary files for Chrome extension" />
+    <MESSAGE value="Merge conflict" />
+    <MESSAGE value="Cookie banner finding and cookie banner auto rejection (in theory)" />
+    <MESSAGE value="Cookie worker and fixing background worker" />
+    <MESSAGE value="Same as last commit" />
+    <MESSAGE value="Fixing merge issues" />
+    <MESSAGE value="CookieHandler cookie expiry invalidate function" />
+    <MESSAGE value="BannerHandler.js can now detect and automatically reject a cookie banner by clicking reject all." />
+    <MESSAGE value="Cookie banner script improvements and general injection" />
+    <MESSAGE value="Commit message" />
+    <MESSAGE value="Assorted fixes" />
+    <MESSAGE value="Banner counting and assorted fixes" />
+    <MESSAGE value="Added new keyword" />
+    <MESSAGE value="Added new keyword and re" />
+    <MESSAGE value="Added new keyword and removed warnings" />
+    <MESSAGE value="Stop commiting to main" />
+    <option name="LAST_COMMIT_MESSAGE" value="Stop commiting to main" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+</project>

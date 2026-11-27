@@ -1,0 +1,22 @@
+Index: knowchip/build/index.html
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><!doctype html>\r\n<html lang=\"en\">\r\n  <head>\r\n    <meta charset=\"UTF-8\" />\r\n    <link rel=\"icon\" type=\"image/svg+xml\" href=\"/favicon.svg\" />\r\n    <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\" />\r\n    <title>knowcrumb</title>\r\n    <script type=\"module\" crossorigin src=\"/assets/main-WlL95H8L.js\"></script>\n    <link rel=\"modulepreload\" crossorigin href=\"/assets/deleterInExtWrld-H3-0Lgcb.js\">\n    <link rel=\"stylesheet\" crossorigin href=\"/assets/main-CIr8PclR.css\">\n  </head>\r\n  <body>\r\n    <div id=\"root\"></div>\r\r\n  </body>\r\n</html>\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/knowchip/build/index.html b/knowchip/build/index.html
+--- a/knowchip/build/index.html	(revision 94e26df5b046e5d4192447ebc8a6b52c1dceb02b)
++++ b/knowchip/build/index.html	(date 1795779398725)
+@@ -5,9 +5,9 @@
+     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+     <title>knowcrumb</title>
+-    <script type="module" crossorigin src="/assets/main-WlL95H8L.js"></script>
++    <script type="module" crossorigin src="/assets/main-CNKb9LZA.js"></script>
+     <link rel="modulepreload" crossorigin href="/assets/deleterInExtWrld-H3-0Lgcb.js">
+-    <link rel="stylesheet" crossorigin href="/assets/main-CIr8PclR.css">
++    <link rel="stylesheet" crossorigin href="/assets/main-Dccwy-PQ.css">
+   </head>
+   <body>
+     <div id="root"></div>
