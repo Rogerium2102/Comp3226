@@ -181,8 +181,15 @@ export function rateLimiter(deletedObj) {
     const key = typeof deletedObj === "string" ? deletedObj : deletedObj.join('-'); //Packs input data into unique string key
 
     const recentDeletions = holder[key] ?? 0; //If value not found with key, defaults to 0 occurances
-    if (recentDeletions > limitNum) {
+    if (recentDeletions === limitNum) {
+        holder[key] = recentDeletions + 10; //Enforces wait until deletion retry
         return false;
+
+    } else if (recentDeletions > limitNum) {
+        //Printing anything here could overwhelm browser
+        //console.warn(`Automatic deletion of tracker ${key} has been rate limited`);
+        return false;
+        
     } else {
         holder[key] = recentDeletions + 1;
         return true;
@@ -204,4 +211,18 @@ export function rateLimiterMaster() {
             if (holder[key] <= 0) delete holder[key]; //Cleans empty keys
         }
     }, calmRate);
+}
+
+/**
+ * Returns all currently rate limited keys
+ * @returns {List[String]}
+ */
+export function checkRateLimiter() {
+    if (!holder) return;
+
+    const limited = [];
+    for (const key in holder) {
+        if (holder[key] >= limitNum) limited.push(key);
+    }
+    return limited;
 }
